@@ -60,6 +60,15 @@ export class PlayerokClient {
         signal: controller.signal,
         dispatcher: proxyDispatcher(config.playerok.proxyUrl),
       });
+      // Площадка закрыта DDoS-Guard: с заблокированного IP приходит HTML, а не JSON.
+      if (!response.headers.get('content-type')?.includes('application/json')) {
+        throw new AppError(
+          response.status === 403
+            ? 'Playerok заблокировал запрос по IP. Укажите PLAYEROK_PROXY_URL — прокси в разрешённом регионе'
+            : `Playerok ответил ${response.status}`,
+          { status: 502, code: 'SOURCE_BLOCKED' },
+        );
+      }
       const data = await response.json();
       if (data.errors?.length) {
         throw new AppError(`Playerok: ${data.errors[0].message}`, {
