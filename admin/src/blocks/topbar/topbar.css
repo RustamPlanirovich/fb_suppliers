@@ -1,0 +1,40 @@
+/* Шапка внутри рабочей панели: заголовок раздела, поиск и профиль. */
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.topbar__title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.topbar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+  background: var(--color-glass-soft);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 999px;
+}
+
+.topbar__name {
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+@media (min-width: 1024px) {
+  .topbar {
+    grid-template-columns: auto minmax(240px, 1fr) auto;
+  }
+
+  .topbar__user {
+    justify-self: end;
+  }
+}

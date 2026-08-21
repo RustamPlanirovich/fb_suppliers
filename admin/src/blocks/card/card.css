@@ -1,0 +1,48 @@
+/* Стеклянная карточка — основной контейнер контента. */
+.card {
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--color-glass-soft);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(var(--blur-card));
+}
+
+.card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.card__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.card__body {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.card__grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* Вложенная карточка внутри карточки: радиус по правилу вложенных радиусов. */
+.card_nested {
+  border-radius: calc(var(--radius-m) - var(--space-2));
+}

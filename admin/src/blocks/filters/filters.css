@@ -1,0 +1,11 @@
+.filters {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  align-items: end;
+}
+
+.filters__actions {
+  display: flex;
+  gap: var(--space-2);
+}

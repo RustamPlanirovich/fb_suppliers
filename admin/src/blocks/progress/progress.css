@@ -1,0 +1,26 @@
+/* Тонкая полоса заполнения: доля, ROI, прогресс кампании. */
+.progress {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.progress__track {
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 16%);
+}
+
+.progress__bar {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-text);
+}
+
+.progress__bar_success {
+  background: var(--color-success);
+}
+
+.progress__bar_warning {
+  background: var(--color-warning);
+}

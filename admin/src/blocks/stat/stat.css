@@ -1,0 +1,41 @@
+/* Карточка показателя: подпись, крупное значение, изменение. */
+.stat {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--color-glass-soft);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-m);
+}
+
+.stat__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.stat__label {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.stat__value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.stat__hint {
+  color: var(--color-text-faint);
+  font-size: 12px;
+}
+
+.stat_danger .stat__value {
+  color: var(--color-danger);
+}
+
+.stat_success .stat__value {
+  color: var(--color-success);
+}

@@ -1,0 +1,80 @@
+.field {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.field__label {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.field__input,
+.field__select,
+.field__textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-s);
+  background: var(--color-glass-soft);
+  color: var(--color-text);
+  font: inherit;
+}
+
+.field__input::placeholder,
+.field__textarea::placeholder {
+  color: var(--color-text-faint);
+}
+
+.field__select option {
+  background: #23282a;
+  color: var(--color-text);
+}
+
+/* Стрелки числовых полей не нужны: значения вводятся с клавиатуры. */
+.field__input[type="number"] {
+  appearance: textfield;
+}
+
+.field__input::-webkit-outer-spin-button,
+.field__input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.field__textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.field__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.field__box {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--color-glass-border);
+  border-radius: 6px;
+  background: var(--color-glass-soft);
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+
+.field__input_checkbox:checked + .field__box {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.field__input_checkbox:focus-visible + .field__box {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.field__error {
+  color: var(--color-danger);
+  font-size: 12px;
+}

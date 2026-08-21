@@ -1,0 +1,16 @@
+/* Подпись изменения под значением: стрелка + процент. */
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.delta_up {
+  color: var(--color-success);
+}
+
+.delta_down {
+  color: var(--color-danger);
+}

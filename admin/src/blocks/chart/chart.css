@@ -1,0 +1,70 @@
+/* Столбчатый график активности. */
+.chart {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.chart__plot {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  height: 168px;
+}
+
+.chart__column {
+  /* Первая строка растягивается — от неё считается высота столбца в процентах. */
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-faint);
+  font: inherit;
+  cursor: pointer;
+}
+
+.chart__bar {
+  /* Ширина столбца ограничена: на редких данных один столбец не должен превращаться в пятно. */
+  width: min(100%, 28px);
+  min-height: 6px;
+  justify-self: center;
+  align-self: end;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 22%);
+  transition: background var(--duration-fast);
+}
+
+.chart__column_active .chart__bar {
+  background: var(--color-text);
+}
+
+.chart__label {
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chart__column_active .chart__label {
+  color: var(--color-text);
+}
+
+.chart__tip {
+  justify-self: start;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-s);
+  background: var(--color-glass-strong);
+  border: 1px solid var(--color-glass-border);
+  font-size: 12px;
+}
+
+@media (hover: hover) {
+  .chart__column:hover .chart__bar {
+    background: rgb(255 255 255 / 45%);
+  }
+}

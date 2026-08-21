@@ -1,0 +1,115 @@
+.table {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.table__scroll {
+  overflow-x: auto;
+}
+
+.table__grid {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 var(--space-1);
+  white-space: nowrap;
+}
+
+.table__head {
+  background: transparent;
+}
+
+.table__th {
+  padding: var(--space-1) var(--space-3);
+  color: var(--color-text-faint);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.table__row {
+  background: var(--color-glass-soft);
+}
+
+.table__td {
+  padding: var(--space-3);
+  border: 0;
+  vertical-align: middle;
+}
+
+.table__td:first-child {
+  border-top-left-radius: var(--radius-s);
+  border-bottom-left-radius: var(--radius-s);
+}
+
+.table__td:last-child {
+  border-top-right-radius: var(--radius-s);
+  border-bottom-right-radius: var(--radius-s);
+}
+
+.table__row_selected {
+  background: var(--color-accent-soft);
+}
+
+/* Строка-группа: товар со свёрнутыми вариантами. */
+.table__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.table__chevron {
+  display: inline-block;
+  width: 14px;
+  flex: none;
+  color: var(--color-text-faint);
+  transition: transform var(--duration-fast);
+}
+
+.table__toggle_open .table__chevron {
+  transform: rotate(90deg);
+}
+
+.table__row_child {
+  background: transparent;
+}
+
+.table__row_child .table__td:first-child {
+  padding-left: var(--space-8);
+  color: var(--color-text-muted);
+}
+
+.table__bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-accent-soft);
+  border-radius: var(--radius-m);
+}
+
+.table__bulk_hidden {
+  display: none;
+}
+
+.table__count {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+@media (hover: hover) {
+  .table__row:hover {
+    background: var(--color-glass-hover);
+  }
+}

@@ -1,0 +1,118 @@
+/* Блок page: дизайн-токены проекта + база html/body. Импортируется первым.
+   Тема — «матовое стекло»: полупрозрачные панели поверх мягкого фона. */
+:root {
+  /* Фон сцены */
+  --color-scene-1: #b9a898;
+  --color-scene-2: #7d8a72;
+  --color-scene-3: #4a5148;
+
+  /* Стеклянные поверхности */
+  --color-glass: rgb(28 32 30 / 62%);
+  --color-glass-soft: rgb(255 255 255 / 8%);
+  --color-glass-strong: rgb(20 24 22 / 78%);
+  --color-glass-border: rgb(255 255 255 / 22%);
+  --color-glass-hover: rgb(255 255 255 / 14%);
+
+  /* Текст */
+  --color-text: #f4f6f4;
+  --color-text-muted: rgb(244 246 244 / 62%);
+  --color-text-faint: rgb(244 246 244 / 40%);
+
+  /* Акценты */
+  --color-accent: #7fb2ff;
+  --color-accent-hover: #a3c8ff;
+  --color-accent-soft: rgb(127 178 255 / 18%);
+  --color-success: #7ee0a8;
+  --color-success-soft: rgb(126 224 168 / 18%);
+  --color-warning: #f2c879;
+  --color-warning-soft: rgb(242 200 121 / 18%);
+  --color-danger: #ff9b8f;
+  --color-danger-soft: rgb(255 155 143 / 18%);
+
+  /* Совместимость со старыми именами */
+  --color-bg: transparent;
+  --color-surface: var(--color-glass);
+  --color-surface-alt: var(--color-glass-soft);
+  --color-border: var(--color-glass-border);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --radius-s: 10px;
+  --radius-m: 18px;
+  --radius-l: 28px;
+
+  --blur-panel: 28px;
+  --blur-card: 16px;
+
+  --shadow-panel: 0 24px 60px rgb(0 0 0 / 35%);
+  --shadow-card: 0 8px 24px rgb(0 0 0 / 18%);
+
+  --z-dropdown: 100;
+  --z-modal: 1000;
+  --z-toast: 2000;
+
+  --duration-fast: 0.15s;
+  --duration-normal: 0.25s;
+
+  --rail-width: 64px;
+}
+
+/* normalize.css не задаёт box-sizing глобально: без этого элементы с width: 100%
+   и внутренними отступами выходят за контейнер и наезжают друг на друга. */
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+/* Тёмная схема сообщается браузеру: иначе он рисует спиннеры числовых полей,
+   выпадающие списки и скроллбары в светлом виде поверх тёмного стекла. */
+:root {
+  color-scheme: dark;
+}
+
+.page {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(120% 90% at 12% 8%, var(--color-scene-1) 0%, transparent 55%),
+    radial-gradient(100% 80% at 88% 18%, var(--color-scene-2) 0%, transparent 60%),
+    linear-gradient(160deg, #6f6558 0%, var(--color-scene-3) 55%, #2f342f 100%);
+  background-attachment: fixed;
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page :focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.page__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.page__hint {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* Микроподпись над значением — как в колонках списка операций. */
+.page__label {
+  color: var(--color-text-faint);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

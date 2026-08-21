@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>fpsuppliers — админка</title>
+  <link rel="stylesheet" href="./vendor/normalize.css">
+  <link rel="stylesheet" href="./pages/index.css">
+  <script type="module" src="./index.js"></script>
+</head>
+<body class="page">
+  <section class="login" hidden>
+    <form class="login__box form">
+      <h1 class="login__title">Вход в админку</h1>
+      <label class="field">
+        <span class="field__label">Email</span>
+        <input class="field__input" type="email" name="email" autocomplete="username" required>
+      </label>
+      <label class="field">
+        <span class="field__label">Пароль</span>
+        <input class="field__input" type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <p class="field__error login__error" hidden></p>
+      <button class="button button_primary" type="submit">Войти</button>
+    </form>
+  </section>
+
+  <div class="app" hidden>
+    <aside class="app__sidebar sidebar">
+      <nav class="sidebar__nav"></nav>
+    </aside>
+
+    <main class="app__main">
+      <header class="topbar">
+        <h1 class="topbar__title page__title">Дашборд</h1>
+        <label class="search">
+          <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M20 20l-3.5-3.5"></path>
+          </svg>
+          <span class="visually-hidden">Поиск по поставщикам и товарам</span>
+          <input class="search__input" type="search" name="q"
+                 placeholder="Поиск поставщика или товара" autocomplete="off">
+          <button class="search__clear" type="button" aria-label="Очистить">✕</button>
+        </label>
+        <div class="topbar__user">
+          <span class="avatar topbar__avatar"></span>
+          <span class="topbar__name"></span>
+          <button class="button button_ghost button_small topbar__logout" type="button">Выйти</button>
+        </div>
+      </header>
+
+      <div class="app__view"></div>
+    </main>
+  </div>
+
+  <div class="toast"></div>
+
+  <dialog class="modal">
+    <div class="modal__header">
+      <h2 class="modal__title"></h2>
+      <button class="button button_ghost modal__close" type="button" aria-label="Закрыть">✕</button>
+    </div>
+    <form class="modal__body form"></form>
+    <div class="modal__footer">
+      <button class="button modal__cancel" type="button">Отмена</button>
+      <button class="button button_primary modal__submit" type="button">Сохранить</button>
+    </div>
+  </dialog>
+
+  <template id="tpl-stat">
+    <div class="stat">
+      <div class="stat__head">
+        <span class="stat__label"></span>
+      </div>
+      <span class="stat__value"></span>
+      <span class="stat__hint delta"></span>
+    </div>
+  </template>
+
+  <template id="tpl-table">
+    <section class="table">
+      <div class="table__bulk table__bulk_hidden">
+        <span class="table__count"></span>
+        <div class="table__bulk-actions"></div>
+      </div>
+      <div class="table__scroll">
+        <table class="table__grid">
+          <thead class="table__head"><tr class="table__head-row"></tr></thead>
+          <tbody class="table__body"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button class="button button_small pager__prev" type="button">Назад</button>
+        <span class="pager__info"></span>
+        <button class="button button_small pager__next" type="button">Вперёд</button>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-card">
+    <section class="card">
+      <div class="card__header">
+        <h2 class="card__title"></h2>
+        <div class="card__actions"></div>
+      </div>
+      <div class="card__body"></div>
+    </section>
+  </template>
+</body>
+</html>

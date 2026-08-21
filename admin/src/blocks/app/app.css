@@ -1,0 +1,56 @@
+/* Каркас админки: слева рельс с иконками, справа — стеклянная рабочая панель. */
+.app[hidden] {
+  display: none;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  min-height: 100vh;
+  padding: var(--space-4);
+}
+
+.app__main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(var(--blur-panel));
+}
+
+.app__view {
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+  min-width: 0;
+}
+
+/* Двухколоночный экран: основная колонка и боковая со сводкой. */
+.app__view_split {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .app {
+    grid-template-columns: var(--rail-width) 1fr;
+    padding: var(--space-6);
+    gap: var(--space-6);
+  }
+
+  .app__view_split {
+    grid-template-columns: minmax(0, 2.2fr) minmax(260px, 1fr);
+    align-items: start;
+  }
+}
+
+@media (min-width: 1280px) {
+  .app__main {
+    padding: var(--space-6);
+  }
+}

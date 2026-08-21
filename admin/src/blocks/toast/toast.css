@@ -1,0 +1,28 @@
+.toast {
+  position: fixed;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  z-index: var(--z-toast);
+  display: grid;
+  gap: var(--space-2);
+  max-width: 380px;
+}
+
+.toast__item {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-m);
+  background: var(--color-glass-strong);
+  color: var(--color-text);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(var(--blur-panel));
+}
+
+.toast__item_error {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.toast__item_success {
+  border-color: var(--color-success);
+}

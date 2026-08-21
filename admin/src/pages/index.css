@@ -1,0 +1,26 @@
+/* Страничный CSS — ТОЛЬКО импорты блоков, никаких собственных правил. */
+@import url('../blocks/page/page.css');
+@import url('../blocks/visually-hidden/visually-hidden.css');
+@import url('../blocks/app/app.css');
+@import url('../blocks/sidebar/sidebar.css');
+@import url('../blocks/topbar/topbar.css');
+@import url('../blocks/search/search.css');
+@import url('../blocks/avatar/avatar.css');
+@import url('../blocks/card/card.css');
+@import url('../blocks/stat/stat.css');
+@import url('../blocks/delta/delta.css');
+@import url('../blocks/progress/progress.css');
+@import url('../blocks/chart/chart.css');
+@import url('../blocks/feed/feed.css');
+@import url('../blocks/table/table.css');
+@import url('../blocks/button/button.css');
+@import url('../blocks/field/field.css');
+@import url('../blocks/badge/badge.css');
+@import url('../blocks/toast/toast.css');
+@import url('../blocks/modal/modal.css');
+@import url('../blocks/pager/pager.css');
+@import url('../blocks/tabs/tabs.css');
+@import url('../blocks/empty/empty.css');
+@import url('../blocks/filters/filters.css');
+@import url('../blocks/form/form.css');
+@import url('../blocks/login/login.css');

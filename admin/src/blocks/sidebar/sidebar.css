@@ -1,0 +1,100 @@
+/* Вертикальный рельс с иконками разделов. */
+/* Рабочая панель создаёт контекст наложения из-за backdrop-filter и лежит в разметке ниже,
+   поэтому без явного z-index она перекрывает подписи разделов. */
+.sidebar {
+  position: sticky;
+  top: var(--space-4);
+  z-index: var(--z-dropdown);
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-2);
+  align-self: start;
+  padding: var(--space-2);
+  overflow-x: auto;
+  background: var(--color-glass);
+  border: 1px solid var(--color-glass-border);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(var(--blur-panel));
+}
+
+.sidebar__brand {
+  display: none;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-1);
+}
+
+.sidebar__link {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-m);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.sidebar__link_active {
+  background: var(--color-glass-hover);
+  color: var(--color-text);
+}
+
+.sidebar__icon {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  fill: none;
+}
+
+/* Подпись раздела появляется рядом с иконкой при наведении и фокусе. */
+.sidebar__tip {
+  position: absolute;
+  left: calc(100% + var(--space-2));
+  z-index: var(--z-dropdown);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-s);
+  background: var(--color-glass-strong);
+  border: 1px solid var(--color-glass-border);
+  color: var(--color-text);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast);
+}
+
+.sidebar__link:focus-visible .sidebar__tip {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .sidebar__link:hover {
+    background: var(--color-glass-hover);
+    color: var(--color-text);
+  }
+
+  .sidebar__link:hover .sidebar__tip {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .sidebar__nav {
+    flex-direction: column;
+  }
+}
