@@ -66,15 +66,23 @@ export class VariantsStatsRepository {
 
   // Пересчёт всех устаревших вариантов партиями: на большой базе их тысячи,
   // и обрывать выборку на первой сотне — значит показывать администратору неполные данные.
-  async refreshAllStale({ batch = 200, maxBatches = 50 } = {}) {
+  async refreshAllStale({ batch = 200, maxBatches = 50, force = false } = {}) {
     let refreshed = 0;
     for (let i = 0; i < maxBatches; i += 1) {
-      const ids = await this.staleIds(batch);
+      // force — пересчитать всё подряд: нужно после изменения формулы, когда данные
+      // формально свежие, но посчитаны по старым правилам.
+      const ids = force ? await this.allIds(batch, refreshed) : await this.staleIds(batch);
       if (!ids.length) return { refreshed, truncated: false };
       await this.refreshMany(ids);
       refreshed += ids.length;
     }
     return { refreshed, truncated: true };
+  }
+
+  async allIds(limit, offset) {
+    const { rows } = await query(
+      'SELECT id FROM product_variants ORDER BY id LIMIT $1 OFFSET $2', [limit, offset]);
+    return rows.map((row) => Number(row.id));
   }
 
   async refreshMany(variantIds) {

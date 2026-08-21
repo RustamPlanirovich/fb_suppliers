@@ -31,7 +31,7 @@ export class CatalogView extends View {
     const card = this.card('Товары', [
       { title: 'Новый товар', variant: 'button_primary', onClick: () => this.#editor.createProduct() },
       { title: 'Новый вариант', onClick: () => this.#editor.createVariant() },
-      { title: 'Пересчитать статистику', onClick: () => this.#refreshStats() },
+      { title: 'Пересчитать статистику', onClick: () => this.#refreshStats(true) },
       { title: 'Пересобрать синонимы', onClick: () => this.#refreshAliases() },
     ]);
     card.querySelector('.card__body').append(filters.element, this.#tree.element, this.#pager);
@@ -119,8 +119,12 @@ export class CatalogView extends View {
     }
   }
 
-  async #refreshStats() {
-    const result = await this.guard(() => api.post('/catalog/variants/refresh-stale', {}));
+  // Кнопка пересчитывает всё подряд: администратор нажимает её как раз тогда,
+  // когда данные выглядят неправдоподобно, и «свежесть» тут не аргумент.
+  async #refreshStats(force = false) {
+    this.toast.show('Пересчитываю, это может занять минуту…');
+    const result = await this.guard(() =>
+      api.post('/catalog/variants/refresh-stale', { force }, { timeout: 600_000 }));
     if (result) {
       this.toast.success(`Пересчитано вариантов: ${result.refreshed}`);
       await this.#load();
