@@ -7,10 +7,11 @@ const client = new DigisellerClient();
 export const digisellerProvider = {
   code: 'digiseller',
   title: 'Digiseller',
-  catalogHint: 'Введите ID продавца Digiseller — например, 1',
+  catalogHint: 'ID продавца или ссылка на его товар с plati.market',
   async games({ q } = {}) {
-    const sellerId = String(q ?? '').replace(/\D/g, '');
-    if (!sellerId) return [];
+    const resolved = await client.resolveSeller(q);
+    if (!resolved) return [];
+    const { sellerId, sellerName } = resolved;
     const categories = await client.categories(sellerId);
     // У магазина может не быть категорий — тогда доступен весь каталог целиком.
     const nodes = [{
@@ -27,7 +28,7 @@ export const digisellerProvider = {
         url: client.categoryUrl(sellerId, category.id),
       });
     }
-    return [{ gameId: sellerId, name: `Магазин ${sellerId}`, nodes }];
+    return [{ gameId: sellerId, name: sellerName || `Магазин ${sellerId}`, nodes }];
   },
   async fetchNode({ nodeId }) {
     const [sellerId, categoryId] = String(nodeId).split(':');

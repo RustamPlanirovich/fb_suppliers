@@ -51,6 +51,49 @@ export class DigisellerClient {
     }
   }
 
+  // Администратору неудобно искать числовой ID: принимаем и ссылку на товар,
+  // и ссылку на магазин, и сам ID. Из ссылки на товар ID продавца достаётся через его карточку.
+  async resolveSeller(input) {
+    const text = String(input ?? '').trim();
+    const sellerUrl = text.match(/seller\/(\d+)/);
+    if (sellerUrl) return { sellerId: sellerUrl[1], sellerName: null };
+
+    const productUrl = text.match(/(?:itm|id_d=|product\/)[^\d]*(\d{4,})/);
+    if (productUrl) return this.productSeller(productUrl[1]);
+
+    const digits = text.replace(/\D/g, '');
+    if (!digits) return null;
+    // ID продавца и ID товара выглядят одинаково, поэтому проверяем по факту:
+    // сначала как магазин, и только если товаров нет — как товар.
+    if (await this.#hasProducts(digits)) return { sellerId: digits, sellerName: null };
+    return (await this.productSeller(digits)) ?? { sellerId: digits, sellerName: null };
+  }
+
+  async #hasProducts(sellerId) {
+    try {
+      const data = await this.#get('/api/shop/products', {
+        seller_id: sellerId, category_id: 0, page: 1, rows: 1,
+        currency: config.digiseller.currency, lang: config.digiseller.lang,
+      });
+      return Number(data.totalItems ?? 0) > 0;
+    } catch {
+      return false;
+    }
+  }
+
+  async productSeller(productId) {
+    try {
+      const data = await this.#get(`/api/products/${productId}/data`, {
+        lang: config.digiseller.lang, currency: config.digiseller.currency,
+      });
+      const seller = data.product?.seller;
+      if (!seller?.id) return null;
+      return { sellerId: String(seller.id), sellerName: seller.name ?? null };
+    } catch {
+      return null;
+    }
+  }
+
   async categories(sellerId) {
     const data = await this.#get('/api/categories', {
       seller_id: sellerId, category_id: 0, lang: config.digiseller.lang,
@@ -72,6 +115,7 @@ export class DigisellerClient {
   // Товары категории: страницами, пока они не кончатся.
   async categoryOffers(sellerId, categoryId) {
     const offers = [];
+    let sellerName = null;
     for (let page = 1; page <= MAX_PAGES; page += 1) {
       const data = await this.#get('/api/shop/products', {
         seller_id: sellerId,
@@ -82,7 +126,11 @@ export class DigisellerClient {
         lang: config.digiseller.lang,
       });
       const products = data.product ?? [];
-      offers.push(...products.map((product) => this.#toOffer(product, sellerId)));
+      // Имя продавца берётся из карточки первого товара: в списке его нет.
+      if (!sellerName && products[0]?.id) {
+        sellerName = (await this.productSeller(products[0].id))?.sellerName ?? null;
+      }
+      offers.push(...products.map((product) => this.#toOffer(product, sellerId, sellerName)));
       if (products.length < ROWS_PER_PAGE) break;
     }
     log.debug('Каталог магазина прочитан', { sellerId, categoryId, offers: offers.length });
@@ -90,7 +138,7 @@ export class DigisellerClient {
   }
 
   // Магазин Digiseller — это один продавец, поэтому все товары раздела принадлежат ему.
-  #toOffer(product, sellerId) {
+  #toOffer(product, sellerId, sellerName) {
     return {
       offerId: String(product.id),
       url: `https://plati.market/itm/${product.id}`,
@@ -100,7 +148,7 @@ export class DigisellerClient {
       attributes: {},
       sellerId: String(sellerId),
       sellerUrl: `https://plati.market/seller/${sellerId}`,
-      sellerName: `Digiseller ${sellerId}`,
+      sellerName: sellerName || `Магазин ${sellerId}`,
       sellerRating: null,
       sellerReviews: null,
       sellerOnline: false,
