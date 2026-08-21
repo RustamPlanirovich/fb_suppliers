@@ -1,5 +1,5 @@
 import { BOT_ACTION, BOT_EVENT, BOT_LIMITS, SORT_FIELDS } from '../../../utils/constants.js';
-import { supplierLink } from '../../../utils/supplier.link.js';
+import { offerLink } from '../../../utils/supplier.link.js';
 import { formatLink, formatVariantStats } from '../formatters.js';
 import { offerKeyboard, sortKeyboard, variantsKeyboard } from '../keyboards.js';
 
@@ -62,7 +62,7 @@ export class SearchHandler {
           supplierId: offer.supplier_id,
           variantId,
           isFavorite,
-          link: supplierLink(offer),
+          link: offerLink(offer),
           canOpen,
         }),
       );

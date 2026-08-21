@@ -76,6 +76,16 @@ export function formatSupplierRow(supplier) {
   return lines.join('\n');
 }
 
+// Позиция поставщика: что именно он продаёт и почём.
+export function formatOfferRow(offer) {
+  const lines = [offer.title || `${offer.product_name} · ${offer.variant_name}`];
+  const marks = [`${offer.product_name} · ${offer.variant_name}`];
+  if (offer.is_searched) marks.push('по вашему запросу');
+  lines.push(marks.join(' · '));
+  lines.push(`Цена: ${money(offer.price)}${offer.min_qty > 1 ? ` (от ${offer.min_qty} шт.)` : ''}`);
+  return lines.join('\n');
+}
+
 // История цены — компактный текстовый ряд вместо графика.
 export function formatSeries(series) {
   if (!series.length) return 'История цены пока не накоплена';

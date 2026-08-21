@@ -22,12 +22,16 @@ export const BOT_ACTION = {
   CATEGORY: 'cat',
   CATEGORY_PAGE: 'catpg',
   VARIANT_SUPPLIERS: 'vsup',
+  SUPPLIER_OFFERS: 'sof',
+  EXPORT: 'exp',
   REVIEW: 'rev',
 };
 
 export const BOT_LIMITS = {
   RESULTS_PER_PAGE: 5,
   SUPPLIERS_PER_PAGE: 8,
+  SUPPLIER_OFFERS_PER_PAGE: 8,
+  EXPORT_LIMIT: 5000,
   MAX_QUERY_LENGTH: 100,
   MIN_QUERY_LENGTH: 2,
   BROADCAST_RATE_PER_SEC: 25,
@@ -49,4 +53,6 @@ export const BOT_EVENT_EXTRA = {
   SUBMISSION: 'submission',
   MARKET_VIEW: 'market_view',
   CATEGORY_VIEW: 'category_view',
+  SUPPLIER_OFFERS: 'supplier_offers',
+  EXPORT: 'export',
 };

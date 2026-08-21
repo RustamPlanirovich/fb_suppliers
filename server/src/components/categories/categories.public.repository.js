@@ -58,6 +58,59 @@ export class CategoriesPublicRepository {
     return { rows, total: Number(rows[0]?.total_count ?? 0) };
   }
 
+  // Что конкретно есть у поставщика: сначала позиции по искомому варианту, затем остальные.
+  // Профиль продавца бесполезен — нужен конкретный лот, поэтому отдаём и ссылку на него.
+  async supplierOffers(supplierId, { variantId = null, limit, offset }) {
+    const { rows } = await query(
+      `SELECT o.id, o.title, o.price, o.currency, o.url, o.min_qty, o.stock,
+              v.id AS variant_id, v.name AS variant_name, p.name AS product_name,
+              (v.id = $2) AS is_searched,
+              count(*) OVER () AS total_count
+       FROM offers o
+       JOIN product_variants v ON v.id = o.variant_id
+       JOIN products p ON p.id = v.product_id
+       WHERE o.supplier_id = $1 AND o.is_active
+       ORDER BY (v.id = $2) DESC, o.price ASC NULLS LAST
+       LIMIT $3 OFFSET $4`,
+      [supplierId, variantId, limit, offset],
+    );
+    return { rows, total: Number(rows[0]?.total_count ?? 0) };
+  }
+
+  // Строки для выгрузки: поставщики и их позиции по варианту или по ветке категорий.
+  async exportByVariant(variantId, limit) {
+    const { rows } = await query(
+      `SELECT s.name AS supplier, s.source, s.source_rating, s.confirmed_deals_30d,
+              p.name AS product, v.name AS variant, o.title, o.price, o.currency, o.url
+       FROM offers o
+       JOIN suppliers s ON s.id = o.supplier_id
+       JOIN product_variants v ON v.id = o.variant_id
+       JOIN products p ON p.id = v.product_id
+       WHERE o.variant_id = $1 AND o.is_active
+         AND s.status = ANY($2) AND NOT s.is_hidden AND s.merged_into_id IS NULL
+       ORDER BY o.price ASC NULLS LAST LIMIT $3`,
+      [variantId, PUBLIC_SUPPLIER_STATUSES, limit],
+    );
+    return rows;
+  }
+
+  async exportByCategory(categoryId, limit) {
+    const { rows } = await query(
+      `SELECT s.name AS supplier, s.source, s.source_rating, s.confirmed_deals_30d,
+              p.name AS product, v.name AS variant, o.title, o.price, o.currency, o.url
+       FROM offers o
+       JOIN suppliers s ON s.id = o.supplier_id
+       JOIN product_variants v ON v.id = o.variant_id
+       JOIN products p ON p.id = v.product_id
+       JOIN categories c ON c.id = p.category_id
+       WHERE c.path LIKE (SELECT path FROM categories WHERE id = $1) || '%'
+         AND o.is_active AND s.status = ANY($2) AND NOT s.is_hidden AND s.merged_into_id IS NULL
+       ORDER BY p.name, v.name, o.price ASC NULLS LAST LIMIT $3`,
+      [categoryId, PUBLIC_SUPPLIER_STATUSES, limit],
+    );
+    return rows;
+  }
+
   // Поставщики, у которых есть предложение по варианту товара — для выдачи после поиска.
   async suppliersByVariant(variantId, { limit, offset }) {
     const { rows } = await query(

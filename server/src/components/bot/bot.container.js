@@ -22,6 +22,7 @@ import {
 } from '../catalog/catalog.container.js';
 import { telegramSender } from './telegram.sender.js';
 import { BotSession } from './bot.session.js';
+import { BotExporter } from './bot.exporter.js';
 
 export const usersRepo = new UsersRepository();
 export const favoritesRepo = new FavoritesRepository();
@@ -41,6 +42,7 @@ export const suppliersService = new SuppliersService(
 
 export const alertsEngine = new AlertsEngine(alertsRepo, telegramSender);
 export const marketAccessService = new MarketAccessService(new OpportunitiesRepository());
+export const botExporter = new BotExporter(categoriesPublicRepo);
 export const botSession = new BotSession(usersRepo, accessService);
 
 export const botDeps = {
@@ -50,6 +52,7 @@ export const botDeps = {
   alerts: alertsRepo,
   moderation: moderationRepo,
   categories: categoriesPublicRepo,
+  exporter: botExporter,
   suppliers: suppliersService,
   catalog: catalogService,
   offers: offersService,

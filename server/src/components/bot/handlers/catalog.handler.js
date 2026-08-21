@@ -1,7 +1,9 @@
 import { BOT_ACTION, BOT_EVENT_EXTRA, BOT_LIMITS } from '../../../utils/constants.js';
 import { supplierLink } from '../../../utils/supplier.link.js';
-import { categoriesKeyboard, supplierKeyboard, pagerKeyboard } from '../keyboards.js';
-import { formatSupplierRow } from '../formatters.js';
+import {
+  categoriesKeyboard, supplierKeyboard, pagerKeyboard, offerLinkKeyboard, exportKeyboard,
+} from '../keyboards.js';
+import { formatSupplierRow, formatOfferRow } from '../formatters.js';
 
 // Навигация по категориям: раздел → подраздел → список поставщиков с листанием.
 export class CatalogHandler {
@@ -9,12 +11,14 @@ export class CatalogHandler {
   #favorites;
   #access;
   #search;
+  #exporter;
 
-  constructor({ categories, favorites, access, search }) {
+  constructor({ categories, favorites, access, search, exporter }) {
     this.#categories = categories;
     this.#favorites = favorites;
     this.#access = access;
     this.#search = search;
+    this.#exporter = exporter;
   }
 
   register(bot) {
@@ -24,6 +28,10 @@ export class CatalogHandler {
       this.#suppliers(ctx, Number(ctx.match[1]), Number(ctx.match[2])));
     bot.action(new RegExp(`^${BOT_ACTION.VARIANT_SUPPLIERS}:(\\d+):(\\d+)$`), (ctx) =>
       this.variantSuppliers(ctx, Number(ctx.match[1]), Number(ctx.match[2])));
+    bot.action(new RegExp(`^${BOT_ACTION.SUPPLIER_OFFERS}:(\\d+):(\\d+):(\\d+)$`), (ctx) =>
+      this.#supplierOffers(ctx, Number(ctx.match[1]), Number(ctx.match[2]), Number(ctx.match[3])));
+    bot.action(new RegExp(`^${BOT_ACTION.EXPORT}:(\\w+):(\\d+)$`), (ctx) =>
+      this.#export(ctx, ctx.match[1], Number(ctx.match[2])));
     bot.action(/^noop$/, (ctx) => ctx.answerCbQuery().catch(() => {}));
   }
 
@@ -74,7 +82,7 @@ export class CatalogHandler {
       await ctx.reply('Листать список:',
         pagerKeyboard(BOT_ACTION.CATEGORY_PAGE, categoryId, page, pages));
     }
-    return null;
+    return ctx.reply('Разобрать список в таблице:', exportKeyboard('category', categoryId));
   }
 
   // Полный список поставщиков по позиции — с листанием, от самой низкой цены.
@@ -86,22 +94,66 @@ export class CatalogHandler {
     if (!total) return ctx.reply('Поставщиков по этой позиции не найдено.');
     const pages = Math.max(1, Math.ceil(total / limit));
     await ctx.reply(`Поставщиков: ${total} (стр. ${page} из ${pages})`);
-    await this.sendSuppliers(ctx, rows);
+    await this.sendSuppliers(ctx, rows, variantId);
     if (pages > 1) {
       await ctx.reply('Листать список:',
         pagerKeyboard(BOT_ACTION.VARIANT_SUPPLIERS, variantId, page, pages));
     }
+    return ctx.reply('Разобрать список в таблице:', exportKeyboard('variant', variantId));
+  }
+
+  // Что есть у поставщика: список его позиций, каждая ведёт на свой лот.
+  async #supplierOffers(ctx, supplierId, variantId, page) {
+    if (ctx.callbackQuery) await ctx.answerCbQuery().catch(() => {});
+    const limit = BOT_LIMITS.SUPPLIER_OFFERS_PER_PAGE;
+    const { rows, total } = await this.#categories.supplierOffers(supplierId, {
+      variantId: variantId || null, limit, offset: (page - 1) * limit,
+    });
+    if (!total) return ctx.reply('У поставщика сейчас нет активных позиций.');
+
+    await this.#search.logEvent({ userId: ctx.state.user.id, type: BOT_EVENT_EXTRA.SUPPLIER_OFFERS,
+      supplierId, variantId: variantId || null });
+    const pages = Math.max(1, Math.ceil(total / limit));
+    await ctx.reply(`Позиции поставщика: ${total} (стр. ${page} из ${pages})`);
+    for (const offer of rows) {
+      await ctx.reply(formatOfferRow(offer), offerLinkKeyboard(offer));
+    }
+    if (pages > 1) {
+      await ctx.reply('Листать позиции:', {
+        reply_markup: {
+          inline_keyboard: [[
+            ...(page > 1 ? [{ text: '⬅️', callback_data: `${BOT_ACTION.SUPPLIER_OFFERS}:${supplierId}:${variantId}:${page - 1}` }] : []),
+            { text: `${page} / ${pages}`, callback_data: 'noop' },
+            ...(page < pages ? [{ text: '➡️', callback_data: `${BOT_ACTION.SUPPLIER_OFFERS}:${supplierId}:${variantId}:${page + 1}` }] : []),
+          ]],
+        },
+      });
+    }
     return null;
   }
 
+  // Выгрузка показанного списка: удобнее разбирать в таблице, чем листать в переписке.
+  async #export(ctx, kind, id) {
+    await ctx.answerCbQuery().catch(() => {});
+    const { access, user } = ctx.state;
+    if (!this.#access.can(access, 'export')) {
+      return ctx.reply('Выгрузка в файл доступна на платном тарифе. Тарифы: /plans');
+    }
+    const file = await this.#exporter.build(kind, id);
+    if (!file) return ctx.reply('Выгружать нечего.');
+    await this.#search.logEvent({ userId: user.id, type: BOT_EVENT_EXTRA.EXPORT,
+      payload: { kind, id } });
+    return ctx.replyWithDocument({ source: file.buffer, filename: file.filename });
+  }
+
   // Общий вывод карточек: используется и категориями, и выдачей после поиска.
-  async sendSuppliers(ctx, suppliers) {
+  async sendSuppliers(ctx, suppliers, variantId = 0) {
     const { user, access } = ctx.state;
     const canOpen = this.#access.can(access, 'show_contacts');
     for (const supplier of suppliers) {
       const isFavorite = await this.#favorites.has(user.id, Number(supplier.id));
       await ctx.reply(formatSupplierRow(supplier), supplierKeyboard({
-        supplier, link: supplierLink(supplier), isFavorite, canOpen,
+        supplier, link: supplierLink(supplier), isFavorite, canOpen, variantId,
       }));
     }
   }
