@@ -26,7 +26,8 @@ const JOINS = `
 
 export class ArbitrageRepository {
   // Исходные данные для расчёта: активные офферы + свежий срез рыночной цены.
-  async computeInputs(limit) {
+  // Читается партиями: на большой базе весь набор в память не берём.
+  async computeInputs(limit, offset = 0) {
     const { rows } = await query(
       `SELECT o.id AS offer_id, o.variant_id, o.price AS buy_price, o.price_checked_at,
               s.score_reliability, s.confirmed_deals_30d,
@@ -43,8 +44,9 @@ export class ArbitrageRepository {
        WHERE o.is_active AND o.price IS NOT NULL AND latest.price_avg IS NOT NULL
          AND NOT s.is_hidden AND s.merged_into_id IS NULL
          AND s.status IN ('verified', 'recheck')
-       LIMIT $1`,
-      [limit],
+       ORDER BY o.id
+       LIMIT $1 OFFSET $2`,
+      [limit, offset],
     );
     return rows;
   }

@@ -5,6 +5,9 @@ import { writeAudit } from '../../utils/audit.js';
 import { BULK_LIMIT } from '../../utils/constants.js';
 
 const STALE_HOURS = 48;
+const BATCH_SIZE = 2000;
+// Предохранитель от бесконечного цикла, а не ограничение выдачи.
+const MAX_BATCHES = 100;
 
 // Сканер связок: «купить у поставщика → продать на площадке». Считает прибыль, ROI и риск.
 export class ArbitrageService {
@@ -14,15 +17,19 @@ export class ArbitrageService {
     this.#repo = repo;
   }
 
-  async recompute({ limit = 5000 } = {}) {
-    const inputs = await this.#repo.computeInputs(limit);
+  // Считается всё, что есть: партиями по BATCH_SIZE, пока данные не кончатся.
+  async recompute() {
     let saved = 0;
-    for (const input of inputs) {
-      await this.#repo.upsert(this.#buildLink(input));
-      saved += 1;
+    let batches = 0;
+    for (; batches < MAX_BATCHES; batches += 1) {
+      const inputs = await this.#repo.computeInputs(BATCH_SIZE, saved);
+      if (!inputs.length) break;
+      for (const input of inputs) await this.#repo.upsert(this.#buildLink(input));
+      saved += inputs.length;
+      if (inputs.length < BATCH_SIZE) break;
     }
     const deactivated = await this.#repo.deactivateStale(STALE_HOURS);
-    return { computed: saved, deactivated };
+    return { computed: saved, deactivated, truncated: batches >= MAX_BATCHES };
   }
 
   #buildLink(input) {
