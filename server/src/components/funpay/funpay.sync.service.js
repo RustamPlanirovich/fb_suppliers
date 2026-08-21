@@ -5,6 +5,7 @@ import { writeAudit } from '../../utils/audit.js';
 import { priceStats, withoutOutliers } from '../../utils/aggregate.js';
 import { OfferGrouping } from './funpay.grouping.js';
 import { FunpaySellers } from './funpay.sellers.js';
+import { CategoriesAutocreate } from '../categories/categories.autocreate.js';
 
 const log = logger.child({ component: 'funpay' });
 const MARKETPLACE_CODE = 'funpay';
@@ -20,6 +21,7 @@ export class FunpaySyncService {
   #stats;
   #grouping = new OfferGrouping();
   #sellers;
+  #categories = new CategoriesAutocreate();
 
   constructor({ client, parser, market, catalog, stats, suppliersRepo, offersRepo, historyRepo }) {
     this.#client = client;
@@ -60,6 +62,11 @@ export class FunpaySyncService {
     if (!marketplace) throw new ValidationError('Площадка funpay не заведена в справочнике');
 
     const parsed = await this.#fetchNode(input);
+    // Категория берётся из названия игры и раздела, если её не задали явно:
+    // так дерево для навигации в боте наполняется само.
+    const category = input.categoryId
+      ? { id: input.categoryId }
+      : await this.#categories.ensure({ gameName: input.gameName, nodeName: input.nodeName });
     // То же правило по умолчанию, что и в предпросмотре: иначе загрузка даёт не то,
     // что администратор увидел перед нажатием кнопки.
     const variantAttrs = input.variantAttrs ?? parsed.filters;
@@ -67,7 +74,7 @@ export class FunpaySyncService {
       { variantAttrs, titleRules: input.titleRules });
     const results = [];
     for (const group of groups) {
-      results.push(await this.#syncGroup({ group, input, marketplace, parsed, actorId }));
+      results.push(await this.#syncGroup({ group, input, marketplace, parsed, actorId, category }));
     }
 
     const summary = {
@@ -89,11 +96,11 @@ export class FunpaySyncService {
     return summary;
   }
 
-  async #syncGroup({ group, input, marketplace, parsed, actorId }) {
+  async #syncGroup({ group, input, marketplace, parsed, actorId, category }) {
     const { variant } = await this.#catalog.resolveVariant({
       productName: input.productName,
       variantName: group.name,
-      categoryId: input.categoryId,
+      categoryId: category?.id,
     });
     const stats = priceStats(withoutOutliers(group.offers.map((offer) => offer.price)));
     await this.#market.addSnapshot({

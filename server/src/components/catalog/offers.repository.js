@@ -14,6 +14,7 @@ const OFFER_SELECT = `
   o.min_qty, o.stock, o.url, o.external_id, o.is_active,
   o.price_checked_at, o.price_changed_at, o.created_at, o.updated_at,
   s.name AS supplier_name, s.source AS supplier_source, s.status AS supplier_status,
+  s.telegram, s.website, s.external_url,
   s.score_reliability, s.confirmed_deals_30d, s.complaints_count, s.quality_score,
   v.name AS variant_name, p.name AS product_name
 `;

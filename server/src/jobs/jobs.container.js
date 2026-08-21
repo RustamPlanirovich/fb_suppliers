@@ -36,6 +36,8 @@ export const jobs = {
         url: node.url,
         productName: node.node_name ? `${node.game_name} ${node.node_name}` : node.game_name,
         categoryId: node.category_id ?? undefined,
+        gameName: node.game_name,
+        nodeName: node.node_name,
         variantAttrs: node.variant_attrs ?? [],
         titleRules: node.title_rules ?? [],
         withSellers: node.with_sellers,

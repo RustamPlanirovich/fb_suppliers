@@ -19,11 +19,15 @@ export const BOT_ACTION = {
   COMPLAIN_REASON: 'cmpr',
   SORT: 'srt',
   PAGE: 'pg',
+  CATEGORY: 'cat',
+  CATEGORY_PAGE: 'catpg',
+  VARIANT_SUPPLIERS: 'vsup',
   REVIEW: 'rev',
 };
 
 export const BOT_LIMITS = {
   RESULTS_PER_PAGE: 5,
+  SUPPLIERS_PER_PAGE: 8,
   MAX_QUERY_LENGTH: 100,
   MIN_QUERY_LENGTH: 2,
   BROADCAST_RATE_PER_SEC: 25,
@@ -44,4 +48,5 @@ export const BOT_EVENT_EXTRA = {
   PRICE_HISTORY: 'price_history',
   SUBMISSION: 'submission',
   MARKET_VIEW: 'market_view',
+  CATEGORY_VIEW: 'category_view',
 };

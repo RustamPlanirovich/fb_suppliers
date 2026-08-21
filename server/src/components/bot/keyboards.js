@@ -12,16 +12,18 @@ const REASON_LABELS = {
 };
 
 export const mainMenu = () => Markup.keyboard([
-  ['🔎 Найти товар', '🔥 Возможности'],
-  ['📈 Что выгодно'],
+  ['📂 Категории', '🔎 Найти товар'],
+  ['🔥 Возможности', '📈 Что выгодно'],
   ['⭐ Избранное', '📋 Мои позиции'],
   ['🔔 Мои алерты', '💼 Тарифы'],
 ]).resize();
 
 // Кнопки под карточкой предложения.
-export const offerKeyboard = ({ offerId, supplierId, variantId, isFavorite }) => Markup.inlineKeyboard([
+export const offerKeyboard = ({ offerId, supplierId, variantId, isFavorite, link, canOpen }) => Markup.inlineKeyboard([
   [
-    Markup.button.callback('📇 Контакты', `${BOT_ACTION.CONTACTS}:${supplierId}`),
+    link && canOpen
+      ? Markup.button.url('➡️ Перейти к поставщику', link)
+      : Markup.button.callback('📇 Контакты', `${BOT_ACTION.CONTACTS}:${supplierId}`),
     Markup.button.callback(
       isFavorite ? '💔 Из избранного' : '⭐ В избранное',
       `${isFavorite ? BOT_ACTION.UNFAVORITE : BOT_ACTION.FAVORITE}:${supplierId}`,
@@ -37,6 +39,41 @@ export const offerKeyboard = ({ offerId, supplierId, variantId, isFavorite }) =>
   ],
   [Markup.button.callback('⚠️ Неактуально / проблема', `${BOT_ACTION.COMPLAIN}:${supplierId}`)],
 ]);
+
+// Список категорий: по кнопке на категорию + счётчик поставщиков в ветке.
+export const categoriesKeyboard = (categories, parent) => {
+  const rows = categories.map((category) => [Markup.button.callback(
+    `${category.name} · ${category.suppliers_count}`,
+    `${BOT_ACTION.CATEGORY}:${category.id}`,
+  )]);
+  if (parent?.id) {
+    rows.push([Markup.button.callback('⬅️ Назад',
+      `${BOT_ACTION.CATEGORY}:${parent.parent_id ?? 0}`)]);
+  }
+  return Markup.inlineKeyboard(rows);
+};
+
+// Карточка поставщика в списке: переход к поставщику одним касанием.
+export const supplierKeyboard = ({ supplier, link, isFavorite, canOpen }) => {
+  const rows = [];
+  if (link && canOpen) rows.push([Markup.button.url('➡️ Перейти к поставщику', link)]);
+  else rows.push([Markup.button.callback('📇 Контакты', `${BOT_ACTION.CONTACTS}:${supplier.id}`)]);
+  rows.push([
+    Markup.button.callback(isFavorite ? '💔 Из избранного' : '⭐ В избранное',
+      `${isFavorite ? BOT_ACTION.UNFAVORITE : BOT_ACTION.FAVORITE}:${supplier.id}`),
+    Markup.button.callback('⚠️ Проблема', `${BOT_ACTION.COMPLAIN}:${supplier.id}`),
+  ]);
+  return Markup.inlineKeyboard(rows);
+};
+
+// Листание длинного списка: «показано N из M».
+export const pagerKeyboard = (prefix, id, page, pages) => {
+  const buttons = [];
+  if (page > 1) buttons.push(Markup.button.callback('⬅️', `${prefix}:${id}:${page - 1}`));
+  buttons.push(Markup.button.callback(`${page} / ${pages}`, 'noop'));
+  if (page < pages) buttons.push(Markup.button.callback('➡️', `${prefix}:${id}:${page + 1}`));
+  return Markup.inlineKeyboard([buttons]);
+};
 
 export const sortKeyboard = (variantId) => Markup.inlineKeyboard([
   [

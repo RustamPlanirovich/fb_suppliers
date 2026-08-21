@@ -8,6 +8,7 @@ import { SupplierHandler } from './handlers/supplier.handler.js';
 import { ToolsHandler } from './handlers/tools.handler.js';
 import { AccountHandler } from './handlers/account.handler.js';
 import { SubmitHandler } from './handlers/submit.handler.js';
+import { CatalogHandler } from './handlers/catalog.handler.js';
 
 const log = logger.child({ component: 'bot' });
 
@@ -19,6 +20,7 @@ export class Bot {
   #tools;
   #account;
   #submit;
+  #catalog;
 
   constructor(instance = telegraf) {
     this.#bot = instance;
@@ -27,6 +29,7 @@ export class Bot {
     this.#tools = new ToolsHandler(botDeps);
     this.#account = new AccountHandler(botDeps);
     this.#submit = new SubmitHandler(botDeps);
+    this.#catalog = new CatalogHandler(botDeps);
   }
 
   // launch() в Telegraf резолвится только при остановке бота, поэтому его нельзя ждать:
@@ -57,6 +60,7 @@ export class Bot {
       return ctx.reply(await botDeps.content.text('start', 'Напишите название товара.'), mainMenu());
     });
     bot.help(async (ctx) => ctx.reply(await botDeps.content.text('help', 'Отправьте название товара.')));
+    bot.command('categories', (ctx) => this.#catalog.open(ctx, 0));
     bot.command('favorites', (ctx) => this.#account.favorites(ctx));
     bot.command('watchlist', (ctx) => this.#account.watchlist(ctx));
     bot.command('alerts', (ctx) => this.#account.alerts(ctx));
@@ -76,6 +80,7 @@ export class Bot {
     this.#search.register(this.#bot);
     this.#supplier.register(this.#bot);
     this.#tools.register(this.#bot);
+    this.#catalog.register(this.#bot);
   }
 
   // Свободный текст: либо продолжение диалога, либо поисковый запрос.
@@ -100,6 +105,7 @@ export class Bot {
 
   #handleMenu(ctx, text) {
     const menu = {
+      '📂 Категории': () => this.#catalog.open(ctx, 0),
       '🔎 Найти товар': () => ctx.reply('Введите название товара.'),
       '🔥 Возможности': () => this.#account.opportunities(ctx),
       '📈 Что выгодно': () => this.#account.market(ctx),

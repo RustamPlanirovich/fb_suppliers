@@ -61,6 +61,21 @@ export function formatOpportunityRow(row) {
     + ` · маржа ${pct(row.margin_pct)} · конкуренция ${competition}`;
 }
 
+// Карточка поставщика в списке: имя, надёжность, сделки, цена — без разметки,
+// чтобы не экранировать пользовательские названия.
+export function formatSupplierRow(supplier) {
+  const lines = [supplier.name];
+  const marks = [];
+  if (supplier.quality_score) marks.push(`оценка ${supplier.quality_score}/5`);
+  if (supplier.score_reliability) marks.push(`надёжность ${supplier.score_reliability}`);
+  if (supplier.source_rating) marks.push(`рейтинг площадки ${supplier.source_rating}`);
+  if (supplier.confirmed_deals_30d) marks.push(`сделок за 30 дней: ${supplier.confirmed_deals_30d}`);
+  if (supplier.offers_count) marks.push(`позиций: ${supplier.offers_count}`);
+  if (marks.length) lines.push(marks.join(' · '));
+  if (supplier.price != null) lines.push(`Цена: ${money(supplier.price)}`);
+  return lines.join('\n');
+}
+
 // История цены — компактный текстовый ряд вместо графика.
 export function formatSeries(series) {
   if (!series.length) return 'История цены пока не накоплена';

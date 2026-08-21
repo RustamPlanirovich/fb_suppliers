@@ -1,4 +1,5 @@
 import { BOT_ACTION, BOT_EVENT, BOT_LIMITS, SORT_FIELDS } from '../../../utils/constants.js';
+import { supplierLink } from '../../../utils/supplier.link.js';
 import { formatLink, formatVariantStats } from '../formatters.js';
 import { offerKeyboard, sortKeyboard, variantsKeyboard } from '../keyboards.js';
 
@@ -9,13 +10,15 @@ export class SearchHandler {
   #favorites;
   #access;
   #content;
+  #categories;
 
-  constructor({ search, catalog, favorites, access, content }) {
+  constructor({ search, catalog, favorites, access, content, categories }) {
     this.#search = search;
     this.#catalog = catalog;
     this.#favorites = favorites;
     this.#access = access;
     this.#content = content;
+    this.#categories = categories;
   }
 
   register(bot) {
@@ -49,6 +52,7 @@ export class SearchHandler {
     await ctx.replyWithMarkdownV2(formatVariantStats(variant), sortKeyboard(variantId));
     if (!offers.length) return ctx.reply('Активных предложений по этой позиции пока нет.');
 
+    const canOpen = this.#access.can(ctx.state.access, 'show_contacts');
     for (const offer of offers) {
       const isFavorite = await this.#favorites.has(user.id, Number(offer.supplier_id));
       await ctx.replyWithMarkdownV2(
@@ -58,9 +62,25 @@ export class SearchHandler {
           supplierId: offer.supplier_id,
           variantId,
           isFavorite,
+          link: supplierLink(offer),
+          canOpen,
         }),
       );
     }
-    return null;
+    return this.#showAllButton(ctx, variantId, offers.length);
+  }
+
+  // По позиции может быть и 50, и 200 поставщиков — предлагаем открыть полный список.
+  async #showAllButton(ctx, variantId, shown) {
+    const { total } = await this.#categories.suppliersByVariant(variantId, { limit: 1, offset: 0 });
+    if (total <= shown) return null;
+    return ctx.reply(`Всего поставщиков по позиции: ${total}`, {
+      reply_markup: {
+        inline_keyboard: [[{
+          text: `📋 Показать всех (${total})`,
+          callback_data: `${BOT_ACTION.VARIANT_SUPPLIERS}:${variantId}:1`,
+        }]],
+      },
+    });
   }
 }

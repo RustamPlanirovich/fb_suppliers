@@ -7,6 +7,7 @@ import { AlertsEngine } from '../alerts/alerts.engine.js';
 import { SearchRepository } from '../search/search.repository.js';
 import { SearchService } from '../search/search.service.js';
 import { ModerationRepository } from '../moderation/moderation.repository.js';
+import { CategoriesPublicRepository } from '../categories/categories.public.repository.js';
 import { SuppliersRepository } from '../suppliers/suppliers.repository.js';
 import { SuppliersStatsRepository } from '../suppliers/suppliers.stats.repository.js';
 import { SuppliersService } from '../suppliers/suppliers.service.js';
@@ -27,6 +28,7 @@ export const favoritesRepo = new FavoritesRepository();
 export const positionsRepo = new PositionsRepository();
 export const alertsRepo = new AlertsRepository();
 export const moderationRepo = new ModerationRepository();
+export const categoriesPublicRepo = new CategoriesPublicRepository();
 export const contentService = new ContentService(new ContentRepository());
 
 export const searchService = new SearchService(
@@ -47,6 +49,7 @@ export const botDeps = {
   positions: positionsRepo,
   alerts: alertsRepo,
   moderation: moderationRepo,
+  categories: categoriesPublicRepo,
   suppliers: suppliersService,
   catalog: catalogService,
   offers: offersService,

@@ -19,6 +19,9 @@ const nodeSchema = z.object({
   url: z.string().trim().url().max(500).optional(),
   productName: z.string().trim().min(2).max(200),
   categoryId: z.coerce.number().int().positive().optional(),
+  // Название игры и раздела площадки: из них строится дерево категорий для бота.
+  gameName: z.string().trim().max(200).optional(),
+  nodeName: z.string().trim().max(200).optional(),
   variantAttrs: z.array(z.string().trim().max(40)).max(5).optional(),
   // Разбиение по названию для разделов без фильтров: [{ name, contains }].
   titleRules: z.array(z.object({
@@ -74,11 +77,7 @@ funpayRouter.get('/sources', async (req, res) => {
 
 funpayRouter.post('/sources', async (req, res) => {
   const data = validate(
-    nodeSchema.extend({
-      gameName: z.string().trim().max(200).optional(),
-      nodeName: z.string().trim().max(200).optional(),
-      productId: z.coerce.number().int().positive().optional(),
-    }),
+    nodeSchema.extend({ productId: z.coerce.number().int().positive().optional() }),
     req.body,
   );
   const marketplace = await marketRepository.findMarketplace('funpay');
@@ -101,6 +100,8 @@ funpayRouter.post('/sources/:id/sync', async (req, res) => {
     url: source.url,
     productName: source.node_name ? `${source.game_name} ${source.node_name}` : source.game_name,
     categoryId: source.category_id ?? undefined,
+    gameName: source.game_name,
+    nodeName: source.node_name,
     variantAttrs: source.variant_attrs ?? [],
     titleRules: source.title_rules ?? [],
     withSellers: source.with_sellers,
