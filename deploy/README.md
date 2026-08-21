@@ -1,44 +1,55 @@
 # Развёртывание
 
-Файлы этой папки переносят проект на сервер.
+## Как развёрнуто сейчас
 
-| Файл | Что делает |
+| Что | Где |
 |---|---|
-| `setup.sh` | Первичная установка: пакеты, Node, pm2, Redis, nginx, БД, миграции, запуск |
-| `nginx.conf` | Админка статикой, `/api` проксируется в приложение на порт 3000 |
-| `restore-db.sh` | Переносит базу с рабочей машины на сервер |
+| Приложение | `/opt/fpsuppliers` на 155.212.165.204, процесс pm2 `fpsuppliers` |
+| Порт | **3100** — на нём и админка, и API (`/api/...`), и `/health` |
+| База | PostgreSQL 15, база и роль `fpsuppliers` |
+| Автозапуск | pm2 systemd, список сохранён (`pm2 save`) |
 
-## Порядок
+Один процесс отдаёт статику админки и API, поэтому обратному прокси нужно направить
+домен на `127.0.0.1:3100` целиком — отдельный сайт под статику не нужен.
 
-```bash
-# 1. На сервере (от root)
-git clone https://github.com/RustamPlanirovich/fb_suppliers.git /opt/fpsuppliers
-bash /opt/fpsuppliers/deploy/setup.sh 155.212.165.204
+### Требование к прокси
 
-# 2. Вписать токен бота
-nano /opt/fpsuppliers/server/.env     # TELEGRAM_BOT_TOKEN=...
-pm2 reload fpsuppliers
+Кука сессии помечена `secure`, приложение доверяет заголовкам прокси (`trust proxy`).
+Прокси обязан передавать:
 
-# 3. Перенести базу (запускается на рабочей машине)
-bash deploy/restore-db.sh root@155.212.165.204
-
-# 4. Создать администратора, если база переносилась не целиком
-cd /opt/fpsuppliers/server && npm run create-admin -- <email> "<Имя>" "<пароль>"
+```
+proxy_set_header Host              $host;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
 ```
 
-## Важно про бота
-
-Телеграм разрешает long polling только одному процессу на токен. Перед запуском на сервере
-остановите локальный процесс, иначе оба будут получать ошибку 409 и терять сообщения:
-
-```bash
-# на рабочей машине
-pkill -f "src/index.js"      # или pm2 stop fpsuppliers
-```
+Без `X-Forwarded-Proto: https` вход в админку не работает: сервер не отдаёт куку
+по незашифрованному соединению. Это ожидаемое поведение, а не ошибка.
 
 ## Обновление
 
 ```bash
-cd /opt/fpsuppliers && git pull && cd server && npm ci --omit=dev && npm run migrate
+cd /opt/fpsuppliers && git pull && cd server
+npm ci --omit=dev && npm run migrate
 pm2 reload fpsuppliers
 ```
+
+## Перенос базы с рабочей машины
+
+```bash
+bash deploy/restore-db.sh root@155.212.165.204
+```
+
+## Важно про бота
+
+Telegram разрешает long polling только одному процессу на токен. Бот работает на сервере,
+поэтому локально держите `BOT_ENABLED=off` в `server/.env` — иначе оба процесса получают 409
+и теряют сообщения.
+
+## Файлы
+
+| Файл | Назначение |
+|---|---|
+| `setup.sh` | Установка на чистую машину: пакеты, Node, pm2, Redis, БД, миграции, запуск |
+| `restore-db.sh` | Перенос базы с рабочей машины на сервер |
+| `nginx.conf` | Пример конфига, если прокси настраивается вручную, а не панелью |

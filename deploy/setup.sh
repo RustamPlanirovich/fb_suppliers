@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 # Первичная установка на сервер. Запускать от root на чистой машине с PostgreSQL.
-# Использование: bash setup.sh <домен-или-IP>
+# Использование: bash setup.sh <домен-или-IP> [порт=3100]
 set -euo pipefail
 
 APP_DIR=/opt/fpsuppliers
+APP_PORT="${2:-3100}"
 REPO=https://github.com/RustamPlanirovich/fb_suppliers.git
 HOST="${1:-_}"
 DB_NAME=fpsuppliers
 DB_USER=fpsuppliers
 
 log() { printf '\n=== %s ===\n' "$1"; }
+
+# На части серверов sudo не установлен, зато всё выполняется от root.
+psql_admin() { if command -v sudo >/dev/null; then sudo -u postgres "$@"; else su - postgres -c "$(printf '%q ' "$@")"; fi; }
 
 log "Проверка окружения"
 command -v psql >/dev/null || { echo "PostgreSQL не найден" >&2; exit 1; }
@@ -39,18 +43,19 @@ npm ci --omit=dev --silent
 
 log "База данных"
 DB_PASS="$(openssl rand -hex 16)"
-sudo -u postgres psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'" | grep -q 1 \
-  || sudo -u postgres psql -qc "CREATE ROLE $DB_USER LOGIN PASSWORD '$DB_PASS';"
-sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" | grep -q 1 \
-  || sudo -u postgres psql -qc "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
+psql_admin psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'" | grep -q 1 \
+  || psql_admin psql -qc "CREATE ROLE $DB_USER LOGIN PASSWORD '$DB_PASS';"
+psql_admin psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" | grep -q 1 \
+  || psql_admin psql -qc "CREATE DATABASE $DB_NAME OWNER $DB_USER;"
 # Пароль задаётся заново при каждом прогоне: старый в .env мог устареть.
-sudo -u postgres psql -qc "ALTER ROLE $DB_USER PASSWORD '$DB_PASS';"
+psql_admin psql -qc "ALTER ROLE $DB_USER PASSWORD '$DB_PASS';"
 
 log "Конфигурация"
 if [ ! -f .env ]; then
   cp .env.example .env
   sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=$(openssl rand -hex 32)|" .env
   sed -i "s|^NODE_ENV=.*|NODE_ENV=production|" .env
+  sed -i "s|^PORT=.*|PORT=$APP_PORT|" .env
   sed -i "s|^CORS_ORIGINS=.*|CORS_ORIGINS=|" .env
   echo "! Впишите TELEGRAM_BOT_TOKEN в $APP_DIR/server/.env"
 fi
@@ -74,7 +79,7 @@ pm2 save
 pm2 startup systemd -u root --hp /root >/dev/null
 
 log "Готово"
-echo "Админка:  http://$HOST/"
-echo "Проверка: curl -s http://127.0.0.1:3000/health"
+echo "Админка и API: порт $APP_PORT (проксируйте домен на 127.0.0.1:$APP_PORT)"
+echo "Проверка: curl -s http://127.0.0.1:$APP_PORT/health"
 echo "Дальше:   создать администратора —"
 echo "  cd $APP_DIR/server && npm run create-admin -- <email> \"<Имя>\" \"<пароль>\""
