@@ -13,6 +13,7 @@ const COLUMNS = [
   { title: 'Лучшая маржа' },
   { title: 'Конкуренция' },
   { title: 'Спрос' },
+  { title: '' },
 ];
 
 // Список товаров: каждая строка — свёрнутая группа вариантов, раскрывается по клику.
@@ -73,8 +74,22 @@ export class ProductsTree {
       el('td', 'table__td', pct(product.margin_max)),
       el('td', 'table__td', LEVEL_LABELS[product.competition_best] ?? '—'),
       el('td', 'table__td', num(product.demand)),
+      this.#aliasesCell(product),
     );
     return row;
+  }
+
+  // Синонимы редактируются прямо из списка: чаще всего их правят, увидев пустой запрос.
+  #aliasesCell(product) {
+    const cell = el('td', 'table__td');
+    const button = el('button', 'button button_small', 'Синонимы');
+    button.type = 'button';
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      this.#view.editAliases(product);
+    });
+    cell.append(button);
+    return cell;
   }
 
   // Варианты подгружаются при первом раскрытии и дальше берутся из памяти.
@@ -111,6 +126,7 @@ export class ProductsTree {
       el('td', 'table__td', pct(variant.margin_pct)),
       el('td', 'table__td', LEVEL_LABELS[variant.competition] ?? '—'),
       el('td', 'table__td', num(variant.demand_score)),
+      el('td', 'table__td', ''),
     );
     row.addEventListener('click', () => this.#view.editVariant(Number(variant.id)));
     return row;

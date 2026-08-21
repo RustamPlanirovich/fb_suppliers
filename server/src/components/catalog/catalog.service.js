@@ -8,11 +8,13 @@ export class CatalogService {
   #products;
   #variants;
   #stats;
+  #aliases;
 
-  constructor(products, variants, stats) {
+  constructor(products, variants, stats, aliases) {
     this.#products = products;
     this.#variants = variants;
     this.#stats = stats;
+    this.#aliases = aliases;
   }
 
   async listProducts(filters, pagingInput) {
@@ -37,6 +39,7 @@ export class CatalogService {
       throw new ConflictError(`Товар «${existing.name}» уже есть — добавьте вариант к нему`);
     }
     const product = await this.#products.create({ ...input, slug });
+    await this.#aliases.refreshAuto(product.id, product.name);
     await writeAudit({ adminId: actorId, entity: 'product', entityId: product.id, action: 'create',
       changes: { name: { to: product.name } } });
     return product;
@@ -45,6 +48,7 @@ export class CatalogService {
   async updateProduct(id, input, actorId) {
     const product = await this.#products.update(id, input);
     if (!product) throw new NotFoundError('Товар не найден');
+    if (input.name) await this.#aliases.refreshAuto(product.id, product.name);
     await writeAudit({ adminId: actorId, entity: 'product', entityId: id, action: 'update',
       changes: input, comment: input.evidence ?? null });
     return product;
@@ -97,6 +101,7 @@ export class CatalogService {
     let product = await this.#products.findBySlug(slug);
     if (!product) {
       product = await this.#products.create({ name: productName, slug, categoryId });
+      await this.#aliases.refreshAuto(product.id, product.name);
     } else if (categoryId && !product.category_id) {
       // Товар мог быть создан до появления дерева категорий — доразмечаем при синхронизации.
       product = await this.#products.update(product.id, { categoryId });

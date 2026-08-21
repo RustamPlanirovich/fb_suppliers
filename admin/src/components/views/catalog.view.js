@@ -6,6 +6,7 @@ import { Filters } from '../filters/filters.js';
 import { View } from './view.base.js';
 import { ProductsTree } from './catalog/products.tree.js';
 import { VariantEditor } from './catalog/variant.editor.js';
+import { AliasesEditor } from './catalog/aliases.editor.js';
 
 // Каталог: товары свёрнутыми группами, варианты раскрываются по клику.
 export class CatalogView extends View {
@@ -13,11 +14,13 @@ export class CatalogView extends View {
   #editor;
   #query = { sort: 'margin' };
   #pager;
+  #aliases;
 
   constructor(deps) {
     super(deps);
     this.#tree = new ProductsTree(this);
     this.#editor = new VariantEditor(this);
+    this.#aliases = new AliasesEditor(this);
   }
 
   async mount() {
@@ -29,6 +32,7 @@ export class CatalogView extends View {
       { title: 'Новый товар', variant: 'button_primary', onClick: () => this.#editor.createProduct() },
       { title: 'Новый вариант', onClick: () => this.#editor.createVariant() },
       { title: 'Пересчитать статистику', onClick: () => this.#refreshStats() },
+      { title: 'Пересобрать синонимы', onClick: () => this.#refreshAliases() },
     ]);
     card.querySelector('.card__body').append(filters.element, this.#tree.element, this.#pager);
     this.root.replaceChildren(card);
@@ -99,8 +103,20 @@ export class CatalogView extends View {
     return this.#editor.editVariant(id);
   }
 
+  editAliases(product) {
+    return this.#aliases.open(product);
+  }
+
   async reload() {
     await this.#load();
+  }
+
+  // Автосинонимы собираются из названий: нужна после массового переименования или импорта.
+  async #refreshAliases() {
+    const result = await this.guard(() => api.post('/catalog/aliases/refresh', {}));
+    if (result) {
+      this.toast.success(`Товаров обработано: ${result.products}, синонимов: ${result.aliases}`);
+    }
   }
 
   async #refreshStats() {

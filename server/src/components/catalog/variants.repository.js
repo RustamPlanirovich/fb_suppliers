@@ -57,25 +57,50 @@ export class VariantsRepository {
     return builder;
   }
 
-  // Полнотекстовый поиск варианта по названию товара — то, что вводит пользователь бота.
-  async search(text, limit) {
+  // Поиск варианта по тому, что ввёл человек. Порядок совпадений:
+  // точный синоним → начало синонима → подстрока → похожие по триграммам → полнотекстовый.
+  // $1 — нормализованный запрос, $2 — ключ сравнения (латиница без пробелов).
+  async search(text, limit, key, skeleton) {
     const { rows } = await query(
-      `SELECT ${VARIANT_SELECT},
+      `WITH matched AS (
+         SELECT a.product_id,
+                max(CASE
+                  WHEN a.alias_key = $2 OR a.alias_norm = $1 THEN 1.0
+                  WHEN a.alias_key LIKE $2 || '%' THEN 0.9
+                  WHEN length($2) >= 3 AND a.alias_key LIKE '%' || $2 || '%' THEN 0.75
+                  WHEN $5 <> '' AND a.alias_skel = $5 THEN 0.7
+                  WHEN $5 <> '' AND a.alias_skel LIKE $5 || '%' THEN 0.6
+                  ELSE similarity(a.alias_key, $2)
+                END) AS score
+         FROM product_aliases a
+         WHERE a.alias_key = $2
+            OR a.alias_norm = $1
+            OR a.alias_key LIKE $2 || '%'
+            OR (length($2) >= 3 AND a.alias_key LIKE '%' || $2 || '%')
+            OR ($5 <> '' AND a.alias_skel LIKE $5 || '%')
+            OR similarity(a.alias_key, $2) >= 0.3
+         GROUP BY a.product_id
+       )
+       SELECT ${VARIANT_SELECT},
+              coalesce(m.score, 0) AS alias_score,
               ts_rank(v.search_vector, plainto_tsquery('simple', $1)) AS rank
        FROM product_variants v
        JOIN products p ON p.id = v.product_id
        LEFT JOIN categories c ON c.id = p.category_id
+       LEFT JOIN matched m ON m.product_id = p.id
        WHERE v.is_active AND p.is_active
-         AND (v.search_vector @@ plainto_tsquery('simple', $1)
+         AND (m.product_id IS NOT NULL
+              OR v.search_vector @@ plainto_tsquery('simple', $1)
               OR v.search_vector @@ plainto_tsquery('russian', $1)
-              OR p.name ILIKE $2 OR v.name ILIKE $2)
-       -- Близкие по релевантности варианты округляются к одному рангу, дальше побеждает тот,
-       -- где реально есть предложения: иначе короткое название обгоняет полное только за счёт
-       -- нормализации длины документа в ts_rank.
-       ORDER BY round(ts_rank(v.search_vector, plainto_tsquery('simple', $1))::numeric, 3) DESC,
+              OR p.name ILIKE $3 OR v.name ILIKE $3)
+       -- Сначала точность совпадения по синониму, затем близкие по релевантности варианты
+       -- округляются к одному рангу — иначе короткое название обгоняет полное только
+       -- за счёт нормализации длины документа в ts_rank.
+       ORDER BY round(coalesce(m.score, 0)::numeric, 2) DESC,
+                round(ts_rank(v.search_vector, plainto_tsquery('simple', $1))::numeric, 3) DESC,
                 v.offers_count DESC
-       LIMIT $3`,
-      [text, `%${text}%`, limit],
+       LIMIT $4`,
+      [text, key, `%${text}%`, limit, skeleton ?? ''],
     );
     return rows;
   }

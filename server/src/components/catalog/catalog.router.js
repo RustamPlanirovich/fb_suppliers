@@ -1,7 +1,9 @@
 import { Router } from 'express';
+import { z } from 'zod';
 import { validate } from '../../utils/validate.js';
+import { ValidationError } from '../../utils/errors.js';
 import { requireAuth, requireRole, adminId } from '../../utils/guard.js';
-import { catalogService, variantsStatsRepository } from './catalog.container.js';
+import { catalogService, variantsStatsRepository, aliasesRepository } from './catalog.container.js';
 import * as schemas from './catalog.schemas.js';
 
 export const catalogRouter = Router();
@@ -32,6 +34,39 @@ catalogRouter.delete('/products/:id', requireRole('admin'), async (req, res) => 
   const { id } = validate(schemas.idParam, req.params);
   await catalogService.removeProduct(id, adminId(req));
   res.json({ ok: true, data: null });
+});
+
+// Синонимы товара: по ним пользователь находит его, как бы ни написал.
+catalogRouter.get('/products/:id/aliases', async (req, res) => {
+  const { id } = validate(schemas.idParam, req.params);
+  res.json({ ok: true, data: await aliasesRepository.list(id) });
+});
+
+catalogRouter.post('/products/:id/aliases', async (req, res) => {
+  const { id } = validate(schemas.idParam, req.params);
+  const { alias, source } = validate(
+    z.object({
+      alias: z.string().trim().min(2).max(120),
+      source: z.enum(['manual', 'query']).optional(),
+    }),
+    req.body,
+  );
+  const created = await aliasesRepository.add(id, alias, source ?? 'manual', adminId(req));
+  if (!created) throw new ValidationError('Слишком короткий синоним');
+  res.status(201).json({ ok: true, data: created });
+});
+
+catalogRouter.delete('/aliases/:id', async (req, res) => {
+  const { id } = validate(schemas.idParam, req.params);
+  if (!(await aliasesRepository.remove(id))) {
+    throw new ValidationError('Синоним не найден или создан автоматически');
+  }
+  res.json({ ok: true, data: null });
+});
+
+// Пересборка автосинонимов для товаров, заведённых до появления словаря.
+catalogRouter.post('/aliases/refresh', requireRole('admin'), async (req, res) => {
+  res.json({ ok: true, data: await aliasesRepository.refreshAll() });
 });
 
 catalogRouter.get('/variants', async (req, res) => {

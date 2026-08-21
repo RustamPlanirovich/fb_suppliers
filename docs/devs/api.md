@@ -54,6 +54,9 @@
 |---|---|---|
 | GET/POST | `/products` | Список и создание товаров. Список отдаёт агрегаты по вариантам (число вариантов, предложений, поставщиков, минимальная закупка, средняя продажа, лучшая маржа, лучшая конкуренция, спрос); фильтры `marginMin`, `priceMax`, `hasOffers`, сортировка `name\|margin\|offers\|suppliers\|price\|demand\|variants` |
 | GET/PATCH/DELETE | `/products/:id` | Карточка товара с вариантами |
+| GET/POST | `/products/:id/aliases` | Синонимы товара: по ним он находится при любом написании |
+| DELETE | `/aliases/:id` | Удалить синоним (автоматические удалить нельзя) |
+| POST | `/aliases/refresh` | Пересобрать автосинонимы из названий товаров (admin) |
 | GET/POST | `/variants` | Варианты; фильтры `marginMin`, `competition`, `priceMax`, `hasOffers`, `sort` |
 | GET/PATCH/DELETE | `/variants/:id` | Вариант |
 | POST | `/variants/:id/refresh-stats` | Пересчёт агрегатов варианта |

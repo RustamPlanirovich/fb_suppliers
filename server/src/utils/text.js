@@ -16,11 +16,6 @@ export function slugify(value) {
     .slice(0, 80);
 }
 
-// Нормализация поискового запроса: для аналитики и ключа кэша.
-export function normalizeQuery(value) {
-  return String(value).toLowerCase().replace(/\s+/g, ' ').trim();
-}
-
 // Телефон в вид, пригодный для сравнения дублей: только цифры.
 export function normalizePhone(value) {
   if (!value) return null;

@@ -6,6 +6,7 @@ import { VariantsStatsRepository } from './variants.stats.repository.js';
 import { OffersRepository } from './offers.repository.js';
 import { OffersHistoryRepository } from './offers.history.repository.js';
 import { MarketRepository } from './market.repository.js';
+import { AliasesRepository } from './aliases.repository.js';
 import { CatalogService } from './catalog.service.js';
 import { OffersService } from './offers.service.js';
 
@@ -15,9 +16,10 @@ export const variantsStatsRepository = new VariantsStatsRepository();
 export const offersRepository = new OffersRepository();
 export const offersHistoryRepository = new OffersHistoryRepository();
 export const marketRepository = new MarketRepository();
+export const aliasesRepository = new AliasesRepository();
 
 export const catalogService = new CatalogService(
-  productsRepository, variantsRepository, variantsStatsRepository,
+  productsRepository, variantsRepository, variantsStatsRepository, aliasesRepository,
 );
 
 export const offersService = new OffersService(

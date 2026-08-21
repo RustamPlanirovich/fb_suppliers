@@ -53,7 +53,7 @@ fpsuppliers — инструмент реселлера цифровых тов�
 | Администрирование | `admins`, `audit_log` |
 | Справочники | `categories`, `tags`, `marketplaces` |
 | Поставщики | `suppliers`, `supplier_tags` |
-| Каталог | `products`, `product_variants`, `offers`, `offer_price_history`, `market_prices` |
+| Каталог | `products`, `product_variants`, `product_aliases`, `offers`, `offer_price_history`, `market_prices` |
 | Пользователи бота | `bot_users`, `favorites`, `watchlist`, `bot_events`, `search_queries` |
 | Модерация | `reviews`, `complaints`, `deal_confirmations`, `submissions` |
 | Реселлер | `arbitrage_links`, `alerts`, `alert_hits`, `reseller_positions` |
@@ -63,7 +63,8 @@ fpsuppliers — инструмент реселлера цифровых тов�
 | Импорт | `import_jobs`, `source_nodes` |
 
 Ключевые особенности схемы:
-- Поиск — по `tsvector` (`russian` + `simple`), обновляется триггерами.
+- Поиск — по `tsvector` (`russian` + `simple`), обновляется триггерами, плюс словарь
+  синонимов `product_aliases` и нечёткое совпадение по триграммам (`pg_trgm`).
 - Любая правка цены пишется в `offer_price_history` вместе с источником и доказательством.
 - Любая правка сущности пишется в `audit_log`: кто, когда, что, на основании чего.
 - У карточек с источником `funpay` контакты запрещены ограничением БД — см. ADR 0004.

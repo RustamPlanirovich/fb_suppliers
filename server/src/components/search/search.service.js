@@ -1,4 +1,4 @@
-import { normalizeQuery } from '../../utils/text.js';
+import { normalizeQuery, searchKey, skeletonKey } from '../../utils/search.keys.js';
 import { calcProfit } from '../../utils/profit.js';
 import { BOT_LIMITS, PUBLIC_SUPPLIER_STATUSES, SORT_FIELDS } from '../../utils/constants.js';
 
@@ -27,7 +27,8 @@ export class SearchService {
 
   async searchVariants({ text, userId, limit = BOT_LIMITS.RESULTS_PER_PAGE }) {
     const normalized = normalizeQuery(text);
-    const variants = await this.#variants.search(normalized, limit);
+    const variants = await this.#variants.search(normalized, limit,
+      searchKey(text), skeletonKey(text));
     await this.#repo.log({ userId, text, normalized, resultsCount: variants.length });
     return variants;
   }
