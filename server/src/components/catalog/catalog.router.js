@@ -96,9 +96,7 @@ catalogRouter.post('/variants/:id/refresh-stats', async (req, res) => {
 });
 
 catalogRouter.post('/variants/refresh-stale', async (req, res) => {
-  const ids = await variantsStatsRepository.staleIds(200);
-  const refreshed = await variantsStatsRepository.refreshMany(ids);
-  res.json({ ok: true, data: { refreshed: refreshed.length } });
+  res.json({ ok: true, data: await variantsStatsRepository.refreshAllStale() });
 });
 
 catalogRouter.delete('/variants/:id', requireRole('admin'), async (req, res) => {

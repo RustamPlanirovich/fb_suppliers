@@ -64,6 +64,19 @@ export class VariantsStatsRepository {
     return rows[0] ?? null;
   }
 
+  // Пересчёт всех устаревших вариантов партиями: на большой базе их тысячи,
+  // и обрывать выборку на первой сотне — значит показывать администратору неполные данные.
+  async refreshAllStale({ batch = 200, maxBatches = 50 } = {}) {
+    let refreshed = 0;
+    for (let i = 0; i < maxBatches; i += 1) {
+      const ids = await this.staleIds(batch);
+      if (!ids.length) return { refreshed, truncated: false };
+      await this.refreshMany(ids);
+      refreshed += ids.length;
+    }
+    return { refreshed, truncated: true };
+  }
+
   async refreshMany(variantIds) {
     const results = [];
     for (const id of variantIds) results.push(await this.refresh(id));
