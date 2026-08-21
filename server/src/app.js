@@ -1,4 +1,7 @@
 // Сборка Express-приложения: middleware → роутеры → 404 → обработчик ошибок.
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -29,11 +32,29 @@ import { funpayRouter } from './components/funpay/funpay.router.js';
 
 const SESSION_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
 
+// Админка лежит рядом с бэкендом и отдаётся тем же процессом: одному домену — один порт,
+// а запросы к /api идут на тот же origin, поэтому CORS не нужен.
+const ADMIN_DIR = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '../../admin/src');
+
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
-  app.use(helmet());
+  // Админка не использует внешних источников: политика максимально узкая.
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  }));
   if (config.corsOrigins.length) {
     app.use(cors({ origin: config.corsOrigins, credentials: true }));
   }
@@ -55,12 +76,23 @@ export function createApp() {
 
   app.get('/health', (req, res) => res.json({ ok: true, data: { env: config.env } }));
   mountRouters(app);
+  mountAdmin(app);
 
   app.use((req, res) => {
     res.status(404).json({ ok: false, error: { code: 'NOT_FOUND', message: 'Маршрут не найден' } });
   });
   app.use(errorHandler);
   return app;
+}
+
+// Статика админки. Если папки нет (бэкенд выложен отдельно) — просто не монтируется.
+function mountAdmin(app) {
+  if (!fs.existsSync(path.join(ADMIN_DIR, 'index.html'))) return;
+  app.use(express.static(ADMIN_DIR, { index: 'index.html', maxAge: '1h' }));
+  app.get(/^\/(?!api\/).*/, (req, res, next) => {
+    if (req.method !== 'GET') return next();
+    return res.sendFile(path.join(ADMIN_DIR, 'index.html'));
+  });
 }
 
 function mountRouters(app) {
