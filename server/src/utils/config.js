@@ -14,6 +14,9 @@ function list(name) {
     .filter(Boolean);
 }
 
+// Общий прокси для всех источников; на площадку можно задать свой.
+const sourceProxy = (name) => process.env[name] ?? process.env.SOURCE_PROXY_URL ?? '';
+
 const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
   + 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36';
 
@@ -39,11 +42,13 @@ export const config = {
     userAgent: process.env.SOURCE_USER_AGENT ?? DEFAULT_USER_AGENT,
     currency: process.env.DIGISELLER_CURRENCY ?? 'RUB',
     lang: process.env.DIGISELLER_LANG ?? 'ru-RU',
+    proxyUrl: sourceProxy('DIGISELLER_PROXY_URL'),
     enabled: process.env.DIGISELLER_SYNC_ENABLED === 'on',
   },
   playerok: {
     baseUrl: process.env.PLAYEROK_BASE_URL ?? 'https://playerok.com',
     userAgent: process.env.SOURCE_USER_AGENT ?? DEFAULT_USER_AGENT,
+    proxyUrl: sourceProxy('PLAYEROK_PROXY_URL'),
     enabled: process.env.PLAYEROK_SYNC_ENABLED === 'on',
   },
   funpay: {
@@ -53,6 +58,7 @@ export const config = {
     // Площадка отдаёт цены в валюте посетителя: без явной фиксации они приходят
     // то в рублях, то в евро, и расчёт маржи ломается.
     currency: (process.env.FUNPAY_CURRENCY ?? 'rub').toLowerCase(),
+    proxyUrl: sourceProxy('FUNPAY_PROXY_URL'),
     enabled: process.env.FUNPAY_SYNC_ENABLED === 'on',
   },
 };

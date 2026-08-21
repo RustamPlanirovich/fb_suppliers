@@ -1,6 +1,7 @@
 import { config } from '../../utils/config.js';
 import { AppError } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
+import { proxyDispatcher } from '../../utils/http.proxy.js';
 import { GAME_QUERY, ITEMS_QUERY } from './playerok.queries.js';
 
 const TIMEOUT_MS = 25_000;
@@ -57,6 +58,7 @@ export class PlayerokClient {
         },
         body: JSON.stringify({ operationName, query, variables }),
         signal: controller.signal,
+        dispatcher: proxyDispatcher(config.playerok.proxyUrl),
       });
       const data = await response.json();
       if (data.errors?.length) {

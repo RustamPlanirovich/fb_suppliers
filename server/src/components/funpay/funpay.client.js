@@ -1,6 +1,7 @@
 import { config } from '../../utils/config.js';
 import { AppError } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
+import { proxyDispatcher } from '../../utils/http.proxy.js';
 
 const REQUEST_TIMEOUT_MS = 20_000;
 const MIN_DELAY_MS = 1500;
@@ -48,6 +49,7 @@ export class FunpayClient {
           Cookie: `cy=${config.funpay.currency}`,
         },
         signal: controller.signal,
+        dispatcher: proxyDispatcher(config.funpay.proxyUrl),
       });
       if (response.status === 404) {
         throw new AppError('Раздел не найден на площадке', { status: 404, code: 'SOURCE_NOT_FOUND' });

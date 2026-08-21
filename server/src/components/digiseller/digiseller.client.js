@@ -1,6 +1,7 @@
 import { config } from '../../utils/config.js';
 import { AppError } from '../../utils/errors.js';
 import { logger } from '../../utils/logger.js';
+import { proxyDispatcher } from '../../utils/http.proxy.js';
 
 const TIMEOUT_MS = 20_000;
 const MIN_DELAY_MS = 700;
@@ -30,6 +31,7 @@ export class DigisellerClient {
       const response = await fetch(url, {
         headers: { Accept: 'application/json', 'User-Agent': config.digiseller.userAgent },
         signal: controller.signal,
+        dispatcher: proxyDispatcher(config.digiseller.proxyUrl),
       });
       if (!response.ok) {
         throw new AppError(`Digiseller ответил ${response.status}`, {
