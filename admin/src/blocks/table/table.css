@@ -89,6 +89,14 @@
   color: var(--color-text-muted);
 }
 
+/* Названия лотов бывают очень длинными и растягивают таблицу так,
+   что важные колонки уезжают за экран. Полный текст остаётся в подсказке. */
+.table__td_wide {
+  max-width: 460px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .table__bulk {
   display: flex;
   flex-wrap: wrap;

@@ -22,8 +22,7 @@ export class SyncWizard {
     return this.#root;
   }
 
-  async init() {
-    const providers = await this.#view.guard(() => api.get('/sources')) ?? [];
+  async init(providers = []) {
     this.#picker = new NodePicker(this.#view, (node) => this.#loadPreview(node), providers);
     this.#showPicker();
     return this;

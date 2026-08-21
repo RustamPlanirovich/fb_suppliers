@@ -5,7 +5,7 @@ import { requireAuth, requireRole, adminId } from '../../utils/guard.js';
 import { NotFoundError } from '../../utils/errors.js';
 import { marketRepository } from '../catalog/catalog.container.js';
 import { PROVIDER_CODES, providerList } from './providers/index.js';
-import { sourceSyncService, sourceNodesRepository } from './sources.container.js';
+import { sourceSyncService, sourceNodesRepository, shopsService } from './sources.container.js';
 
 export const sourcesRouter = Router();
 sourcesRouter.use(requireAuth, requireRole('admin'));
@@ -63,6 +63,24 @@ sourcesRouter.post('/:provider/sync-batch', async (req, res) => {
   const { provider } = validate(providerParam, req.params);
   const { nodes } = validate(z.object({ nodes: z.array(nodeSchema).min(1).max(20) }), req.body);
   res.json({ ok: true, data: await sourceSyncService.syncMany(provider, nodes, adminId(req)) });
+});
+
+// Массовое подключение магазинов: список ссылок или ID одним действием.
+sourcesRouter.post('/:provider/shops', async (req, res) => {
+  const { provider } = validate(providerParam, req.params);
+  const data = validate(
+    z.object({
+      items: z.array(z.string().trim().min(1).max(300)).min(1).max(50),
+      sellerStatus: z.enum(['draft', 'pending', 'verified']).optional(),
+      titleRules: z.array(z.object({
+        name: z.string().trim().min(1).max(80),
+        contains: z.string().trim().min(1).max(200),
+      })).max(30).optional(),
+      save: z.boolean().optional(),
+    }),
+    req.body,
+  );
+  res.json({ ok: true, data: await shopsService.connect(provider, data, adminId(req)) });
 });
 
 // --- разделы, поставленные на регулярное обновление ---

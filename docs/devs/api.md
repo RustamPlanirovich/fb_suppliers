@@ -52,7 +52,7 @@
 
 | Метод | Путь | Комментарий |
 |---|---|---|
-| GET/POST | `/products` | Список и создание товаров. Список отдаёт агрегаты по вариантам (число вариантов, предложений, поставщиков, минимальная закупка, средняя продажа, лучшая маржа, лучшая конкуренция, спрос); фильтры `marginMin`, `priceMax`, `hasOffers`, сортировка `name\|margin\|offers\|suppliers\|price\|demand\|variants` |
+| GET/POST | `/products` | Список и создание товаров. Список отдаёт агрегаты по вариантам (число вариантов, предложений, поставщиков, минимальная и медианная закупка, средняя продажа, лучшая маржа, лучшая конкуренция, спрос); фильтры `marginMin`, `priceMax`, `hasOffers`, сортировка `name\|margin\|offers\|suppliers\|price\|demand\|variants` |
 | GET/PATCH/DELETE | `/products/:id` | Карточка товара с вариантами |
 | GET/POST | `/products/:id/aliases` | Синонимы товара: по ним он находится при любом написании |
 | DELETE | `/aliases/:id` | Удалить синоним (автоматические удалить нельзя) |
@@ -192,6 +192,7 @@
 | POST | `/:provider/preview` | Предпросмотр без записи: разбивка на варианты, цены, признаки `needsRules` и `truncated` |
 | POST | `/:provider/sync` | Загрузка: `nodeId`, `productName`, опц. `gameName`, `nodeName`, `variantAttrs`, `titleRules`, `withSellers`, `sellerStatus` |
 | POST | `/:provider/sync-batch` | То же для списка разделов (до 20) |
+| POST | `/:provider/shops` | Массовое подключение магазинов: `items` — ссылки или ID (до 50), опц. `sellerStatus`, `titleRules`, `save`. Каждый магазин находится, загружается и при `save: true` ставится на автообновление |
 | GET | `/saved/list` | Разделы на регулярном обновлении |
 | POST | `/:provider/saved` | Поставить раздел на обновление |
 | POST | `/saved/:id/sync` | Обновить сейчас |

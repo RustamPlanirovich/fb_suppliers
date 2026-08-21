@@ -18,6 +18,7 @@ const STATS = `
            coalesce(sum(v.offers_count), 0)::int AS offers,
            coalesce(sum(v.suppliers_count), 0)::int AS suppliers,
            min(v.buy_min) AS buy_min,
+           round(avg(v.buy_median)::numeric, 2) AS buy_median,
            round(avg(v.sell_avg)::numeric, 2) AS sell_avg,
            max(v.margin_pct) AS margin_max,
            coalesce(sum(v.demand_score), 0) AS demand,
@@ -43,7 +44,7 @@ export class ProductsRepository {
       `SELECT p.id, p.name, p.slug, p.category_id, p.is_active, p.created_at,
               c.name AS category_name,
               stats.variants AS variants_count, stats.offers AS offers_count,
-              stats.suppliers AS suppliers_count, stats.buy_min, stats.sell_avg,
+              stats.suppliers AS suppliers_count, stats.buy_min, stats.buy_median, stats.sell_avg,
               stats.margin_max, stats.demand, stats.competition_best,
               count(*) OVER () AS total_count
        FROM products p

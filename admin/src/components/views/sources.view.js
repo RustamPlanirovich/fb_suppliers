@@ -3,25 +3,29 @@ import { el } from '../../utils/dom.js';
 import { dateTime, num } from '../../utils/format.js';
 import { View } from './view.base.js';
 import { SyncWizard } from './sources/sync.wizard.js';
+import { ShopsPanel } from './sources/shops.panel.js';
 
 // Источники цен: разделы площадки, из которых наполняются товары, цены и карточки продавцов.
 export class SourcesView extends View {
   #wizard;
+  #shops;
 
   constructor(deps) {
     super(deps);
     this.#wizard = new SyncWizard(this);
+    this.#shops = new ShopsPanel(this);
   }
 
   async mount() {
+    const providers = await this.guard(() => api.get('/sources')) ?? [];
     const wizardCard = this.card('Загрузка раздела площадки');
     wizardCard.querySelector('.card__body').append(this.#wizard.element);
 
     const savedCard = this.card('Разделы на регулярной синхронизации', [
       { title: 'Обновить список', onClick: () => this.reload() },
     ]);
-    this.root.replaceChildren(wizardCard, savedCard);
-    await this.#wizard.init();
+    this.root.replaceChildren(this.#shops.render(providers), wizardCard, savedCard);
+    await this.#wizard.init(providers);
     await this.reload();
   }
 

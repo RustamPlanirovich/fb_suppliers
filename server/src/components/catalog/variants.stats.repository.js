@@ -8,7 +8,8 @@ export class VariantsStatsRepository {
          SELECT count(*)::int AS offers_count,
                 count(DISTINCT o.supplier_id)::int AS suppliers_count,
                 min(o.price) AS buy_min, max(o.price) AS buy_max,
-                round(avg(o.price)::numeric, 2) AS buy_avg
+                round(avg(o.price)::numeric, 2) AS buy_avg,
+                round(percentile_cont(0.5) WITHIN GROUP (ORDER BY o.price)::numeric, 2) AS buy_median
          FROM offers o JOIN suppliers s ON s.id = o.supplier_id
          WHERE o.variant_id = $1 AND o.is_active AND NOT s.is_hidden
            AND s.merged_into_id IS NULL
@@ -40,6 +41,7 @@ export class VariantsStatsRepository {
          offers_count = buy.offers_count,
          suppliers_count = buy.suppliers_count,
          buy_min = buy.buy_min, buy_max = buy.buy_max, buy_avg = buy.buy_avg,
+         buy_median = buy.buy_median,
          sell_avg = sell_agg.sell_avg, sell_min = sell_agg.sell_min, sell_max = sell_agg.sell_max,
          sellers_count = sell_agg.sellers_count,
          margin_pct = CASE WHEN sell_agg.sell_avg > 0 AND buy.buy_min IS NOT NULL
@@ -55,7 +57,8 @@ export class VariantsStatsRepository {
          stats_updated_at = now()
        FROM buy, sell_agg, trend, demand
        WHERE v.id = $1
-       RETURNING v.id, v.buy_min, v.sell_avg, v.margin_pct, v.competition, v.trend_7d_pct`,
+       RETURNING v.id, v.buy_min, v.buy_median, v.sell_avg, v.margin_pct, v.competition,
+                 v.trend_7d_pct`,
       [variantId],
     );
     return rows[0] ?? null;
