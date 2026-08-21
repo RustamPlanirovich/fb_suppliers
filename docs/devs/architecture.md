@@ -29,7 +29,10 @@ fpsuppliers — инструмент реселлера цифровых тов�
 | broadcasts | Рассылки: сегмент, тест, запуск с ограничением скорости | `server/src/components/broadcasts/` |
 | analytics | Дашборд и экран «что происходит на рынке» | `server/src/components/analytics/` |
 | io | Импорт Excel/CSV с сопоставлением колонок и выгрузки | `server/src/components/io/` |
-| funpay | Каталог площадки, разбор разделов, сбор цен и карточек продавцов | `server/src/components/funpay/` |
+| sources | Общая синхронизация источников: разбор раздела → варианты → срез цен → карточки | `server/src/components/sources/` |
+| funpay | Провайдер FunPay: каталог и разбор публичных страниц | `server/src/components/funpay/` |
+| digiseller | Провайдер Digiseller: официальный публичный API витрины plati.market | `server/src/components/digiseller/` |
+| playerok | Провайдер Playerok: данные через их GraphQL | `server/src/components/playerok/` |
 
 Каждый компонент разложен на `*.router.js` (HTTP), `*.service.js` (логика), `*.repository.js` (SQL).
 
@@ -74,7 +77,8 @@ fpsuppliers — инструмент реселлера цифровых тов�
 - PostgreSQL — источник истины.
 - Redis — сессии админки, кэш дашборда и контента, состояние диалога бота, суточные квоты, блокировки рассылок.
 - Telegram Bot API (`telegraf`) — бот, алерты, рассылки.
-- Площадка FunPay — только чтение публичных страниц без авторизации (см. ADR 0004 и ADR 0006).
+- Площадки FunPay, Digiseller и Playerok — только чтение публичных данных без авторизации
+  (см. ADR 0004, 0006 и 0007). Контакты их продавцов не собираются — запрет закреплён в БД.
 
 ## Фоновые процессы
 

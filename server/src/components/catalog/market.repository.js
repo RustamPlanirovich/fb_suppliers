@@ -12,6 +12,11 @@ export class MarketRepository {
     return rows[0] ?? null;
   }
 
+  async findMarketplaceById(id) {
+    const { rows } = await query('SELECT * FROM marketplaces WHERE id = $1', [id]);
+    return rows[0] ?? null;
+  }
+
   async upsertMarketplace({ code, name, commissionPct, payoutFee, url, isActive }) {
     const { rows } = await query(
       `INSERT INTO marketplaces (code, name, commission_pct, payout_fee, url, is_active)

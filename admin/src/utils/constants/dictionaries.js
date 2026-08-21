@@ -11,7 +11,9 @@ export const SUPPLIER_STATUS_LABELS = {
 export const SUPPLIER_SOURCE_LABELS = {
   manual: 'Вручную',
   telegram: 'Telegram',
-  funpay: 'Площадка',
+  funpay: 'FunPay',
+  digiseller: 'Digiseller',
+  playerok: 'Playerok',
   import: 'Импорт',
   user: 'От пользователя',
 };

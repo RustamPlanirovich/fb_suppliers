@@ -5,8 +5,8 @@ import { alertsEngine } from '../components/bot/bot.container.js';
 import { broadcastsService } from '../components/broadcasts/broadcasts.router.js';
 import { subscriptionsRepository } from '../components/subscriptions/subscriptions.container.js';
 import { variantsStatsRepository } from '../components/catalog/catalog.container.js';
-import { funpaySyncService, sourceNodesRepository } from '../components/funpay/funpay.container.js';
-import { config } from '../utils/config.js';
+import { sourceSyncService, sourceNodesRepository } from '../components/sources/sources.container.js';
+import { marketRepository } from '../components/catalog/catalog.container.js';
 
 const STALE_VARIANTS_PER_RUN = 200;
 const SOURCE_NODES_PER_RUN = 5;

@@ -1,10 +1,10 @@
 import { logger } from '../../utils/logger.js';
 
-const log = logger.child({ component: 'funpay' });
+const log = logger.child({ component: 'sources' });
 
-// Сохранение продавцов площадки и их предложений.
+// Сохранение продавцов площадки и их предложений — одинаково для всех источников.
 // Контакты не пишутся: у карточек с источником-площадкой они запрещены ограничением БД.
-export class FunpaySellers {
+export class SourceSellers {
   #suppliers;
   #offers;
   #history;

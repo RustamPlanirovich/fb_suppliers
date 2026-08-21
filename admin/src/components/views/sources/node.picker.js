@@ -7,15 +7,28 @@ export class NodePicker {
   #view;
   #onPick;
   #games = [];
+  #providers = [];
+  #provider = 'funpay';
 
-  constructor(view, onPick) {
+  constructor(view, onPick, providers = []) {
     this.#view = view;
     this.#onPick = onPick;
+    this.#providers = providers;
+    this.#provider = providers[0]?.code ?? 'funpay';
   }
 
   render() {
+    const source = el('select', 'field__select');
+    source.replaceChildren(...this.#providers.map((item) =>
+      option(item.code, item.title, item.code === this.#provider)));
+
     const search = el('input', 'field__input');
-    search.placeholder = 'Название игры или сервиса, например Spotify';
+    search.placeholder = this.#hint();
+    source.addEventListener('change', () => {
+      this.#provider = source.value;
+      search.placeholder = this.#hint();
+      this.#games = [];
+    });
     const games = el('select', 'field__select');
     const nodes = el('select', 'field__select');
 
@@ -30,7 +43,12 @@ export class NodePicker {
     pick.addEventListener('click', () => this.#pick(games, nodes));
 
     const row = el('div', 'form__row');
-    row.append(this.#field('Поиск игры', search), this.#field('Игра', games), this.#field('Раздел', nodes));
+    row.append(
+      this.#field('Площадка', source),
+      this.#field('Что искать', search),
+      this.#field('Игра или магазин', games),
+      this.#field('Раздел', nodes),
+    );
     const actions = el('div', 'form__actions');
     actions.append(find, pick);
 
@@ -39,8 +57,18 @@ export class NodePicker {
     return box;
   }
 
+  #hint() {
+    return this.#providers.find((item) => item.code === this.#provider)?.catalogHint
+      ?? 'Название игры или сервиса';
+  }
+
+  get provider() {
+    return this.#provider;
+  }
+
   async #find(text, games, nodes) {
-    const found = await this.#view.guard(() => api.get('/funpay/games', { q: text }));
+    const found = await this.#view.guard(() =>
+      api.get(`/sources/${this.#provider}/games`, { q: text }));
     if (!found) return;
     this.#games = found;
     games.replaceChildren(...found.map((game) =>
@@ -60,6 +88,7 @@ export class NodePicker {
       return;
     }
     this.#onPick({
+      provider: this.#provider,
       nodeId: nodes.value,
       gameName: game.name,
       nodeName: nodes.options[nodes.selectedIndex]?.text ?? '',

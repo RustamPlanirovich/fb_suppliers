@@ -21,12 +21,12 @@ export class SourcesView extends View {
       { title: 'Обновить список', onClick: () => this.reload() },
     ]);
     this.root.replaceChildren(wizardCard, savedCard);
-    this.#wizard.init();
+    await this.#wizard.init();
     await this.reload();
   }
 
   async reload() {
-    const sources = await this.guard(() => api.get('/funpay/sources'));
+    const sources = await this.guard(() => api.get('/sources/saved/list'));
     if (!sources) return;
     const body = this.root.querySelectorAll('.card__body')[1];
     body.replaceChildren(...(sources.length
@@ -37,7 +37,8 @@ export class SourcesView extends View {
   #sourceRow(source) {
     const box = el('div', 'card');
     const title = `${source.game_name ?? ''} · ${source.node_name ?? ''}`.trim();
-    box.append(el('p', 'card__title', `${title} (раздел ${source.node_id})`));
+    box.append(el('p', 'card__title',
+      `${source.marketplace_code}: ${title} (раздел ${source.node_id})`));
     const result = source.last_result ?? {};
     box.append(el('p', 'page__hint',
       `Обновлён: ${dateTime(source.last_synced_at)} · предложений ${num(result.offers)}`
@@ -64,7 +65,7 @@ export class SourcesView extends View {
 
   async #sync(id) {
     this.toast.show('Обновляю раздел, это занимает несколько секунд…');
-    const result = await this.guard(() => api.post(`/funpay/sources/${id}/sync`, {}, { timeout: 120_000 }));
+    const result = await this.guard(() => api.post(`/sources/saved/${id}/sync`, {}, { timeout: 600_000 }));
     if (!result) return;
     this.toast.success(
       `Готово: предложений ${result.offers}, вариантов ${result.variants},`
@@ -74,7 +75,7 @@ export class SourcesView extends View {
 
   async #toggle(id, isActive) {
     await this.guard(async () => {
-      await api.post(`/funpay/sources/${id}/active`, { isActive });
+      await api.post(`/sources/saved/${id}/active`, { isActive });
       await this.reload();
     });
   }
@@ -82,7 +83,7 @@ export class SourcesView extends View {
   async #remove(id) {
     if (!confirm('Убрать раздел из регулярной синхронизации?')) return;
     await this.guard(async () => {
-      await api.delete(`/funpay/sources/${id}`);
+      await api.delete(`/sources/saved/${id}`);
       this.toast.success('Раздел удалён');
       await this.reload();
     });

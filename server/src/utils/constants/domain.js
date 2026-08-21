@@ -13,8 +13,11 @@ export const SUPPLIER_STATUSES = Object.values(SUPPLIER_STATUS);
 export const PUBLIC_SUPPLIER_STATUSES = [SUPPLIER_STATUS.VERIFIED, SUPPLIER_STATUS.RECHECK];
 
 // 'funpay' — только источник рыночных цен, контакты у таких карточек не хранятся.
-export const SUPPLIER_SOURCES = ['manual', 'telegram', 'funpay', 'import', 'user'];
-export const MARKETPLACE_SOURCES = ['funpay'];
+export const SUPPLIER_SOURCES = [
+  'manual', 'telegram', 'funpay', 'digiseller', 'playerok', 'import', 'user',
+];
+// Источники-площадки: контакты их продавцов не собираются и не хранятся.
+export const MARKETPLACE_SOURCES = ['funpay', 'digiseller', 'playerok'];
 
 export const SORT_FIELDS = {
   RELEVANCE: 'relevance',

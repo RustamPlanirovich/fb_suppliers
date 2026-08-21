@@ -22,8 +22,9 @@ export class SyncWizard {
     return this.#root;
   }
 
-  init() {
-    this.#picker = new NodePicker(this.#view, (node) => this.#loadPreview(node));
+  async init() {
+    const providers = await this.#view.guard(() => api.get('/sources')) ?? [];
+    this.#picker = new NodePicker(this.#view, (node) => this.#loadPreview(node), providers);
     this.#showPicker();
     return this;
   }
@@ -46,7 +47,8 @@ export class SyncWizard {
     this.#node = node;
     this.#view.toast.show('Читаю раздел площадки…');
     const preview = await this.#view.guard(() =>
-      api.post('/funpay/preview', { nodeId: node.nodeId, titleRules }, { timeout: 60_000 }));
+      api.post(`/sources/${node.provider}/preview`, { nodeId: node.nodeId, titleRules },
+        { timeout: 300_000 }));
     if (!preview) return;
     this.#preview = preview;
     this.#rules = titleRules;
@@ -68,6 +70,11 @@ export class SyncWizard {
     box.append(el('p', 'card__title',
       `${this.#node.gameName} · ${this.#node.nodeName}: предложений ${num(total)},`
       + ` продавцов ${num(sellers)}, валюта ${currency}`));
+    if (this.#preview.truncated) {
+      box.append(el('p', 'field__error',
+        `Площадка отдала не весь раздел: прочитано ${num(total)} из ${num(this.#preview.sourceTotal)}.`
+        + ' Статистика считается по прочитанной части.'));
+    }
 
     if (this.#preview.needsRules) {
       box.append(el('p', 'field__error',
@@ -146,7 +153,7 @@ export class SyncWizard {
   async #sync(payload) {
     this.#view.toast.show('Загружаю, это занимает несколько секунд…');
     const result = await this.#view.guard(() =>
-      api.post('/funpay/sync', payload, { timeout: 180_000 }));
+      api.post(`/sources/${this.#node.provider}/sync`, payload, { timeout: 600_000 }));
     if (!result) return;
     this.#view.toast.success(
       `Готово: вариантов ${result.variants}, карточек создано ${result.suppliersCreated},`
@@ -154,7 +161,7 @@ export class SyncWizard {
   }
 
   async #save(payload) {
-    const result = await this.#view.guard(() => api.post('/funpay/sources', {
+    const result = await this.#view.guard(() => api.post(`/sources/${this.#node.provider}/saved`, {
       ...payload,
       gameName: this.#node.gameName,
       nodeName: this.#node.nodeName,

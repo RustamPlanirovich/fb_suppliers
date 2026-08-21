@@ -28,7 +28,7 @@ import { contentRouter } from './components/content/content.router.js';
 import { broadcastsRouter } from './components/broadcasts/broadcasts.router.js';
 import { analyticsRouter } from './components/analytics/analytics.router.js';
 import { ioRouter } from './components/io/io.router.js';
-import { funpayRouter } from './components/funpay/funpay.router.js';
+import { sourcesRouter } from './components/sources/sources.router.js';
 
 const SESSION_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
 
@@ -113,7 +113,7 @@ function mountRouters(app) {
   app.use('/api/broadcasts', broadcastsRouter);
   app.use('/api/analytics', analyticsRouter);
   app.use('/api/io', ioRouter);
-  app.use('/api/funpay', funpayRouter);
+  app.use('/api/sources', sourcesRouter);
 }
 
 // Наружу не уходят ни стектрейсы, ни тексты внутренних ошибок.

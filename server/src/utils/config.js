@@ -14,6 +14,9 @@ function list(name) {
     .filter(Boolean);
 }
 
+const DEFAULT_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
+  + 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36';
+
 export const config = {
   env: process.env.NODE_ENV ?? 'development',
   port: Number(process.env.PORT ?? 3000),
@@ -30,6 +33,18 @@ export const config = {
   telegram: {
     token: process.env.TELEGRAM_BOT_TOKEN ?? '',
     enabled: process.env.BOT_ENABLED !== 'off',
+  },
+  digiseller: {
+    baseUrl: process.env.DIGISELLER_BASE_URL ?? 'https://api.digiseller.com',
+    userAgent: process.env.SOURCE_USER_AGENT ?? DEFAULT_USER_AGENT,
+    currency: process.env.DIGISELLER_CURRENCY ?? 'RUB',
+    lang: process.env.DIGISELLER_LANG ?? 'ru-RU',
+    enabled: process.env.DIGISELLER_SYNC_ENABLED === 'on',
+  },
+  playerok: {
+    baseUrl: process.env.PLAYEROK_BASE_URL ?? 'https://playerok.com',
+    userAgent: process.env.SOURCE_USER_AGENT ?? DEFAULT_USER_AGENT,
+    enabled: process.env.PLAYEROK_SYNC_ENABLED === 'on',
   },
   funpay: {
     baseUrl: process.env.FUNPAY_BASE_URL ?? 'https://funpay.com',
