@@ -68,5 +68,9 @@ curl -s localhost:3000/health
 | `BOT_ENABLED` | нет | `off` — не поднимать бота (удобно локально) |
 | `FUNPAY_SYNC_ENABLED` | нет | `on` — разрешить обращения к площадке за ценами |
 | `FUNPAY_CURRENCY` | нет | Валюта витрины площадки: `rub` (по умолчанию), `usd`, `eur` |
+| `DIGISELLER_SYNC_ENABLED` | нет | `on` — разрешить обращения к Digiseller |
+| `PLAYEROK_SYNC_ENABLED` | нет | `on` — разрешить обращения к Playerok |
+| `SOURCE_PROXY_URL` | нет | Прокси для всех источников: `http://user:pass@host:port` |
+| `PLAYEROK_PROXY_URL` | нет | Прокси только для Playerok — площадка блокирует IP дата-центров |
 | `FUNPAY_BASE_URL` | нет | Базовый адрес площадки |
 | `LOG_LEVEL` | нет | `debug` \| `info` \| `warn` \| `error` |
