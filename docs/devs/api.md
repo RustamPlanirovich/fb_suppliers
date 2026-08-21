@@ -187,7 +187,7 @@
 | GET | `/games` | Каталог площадки: `?q=` — поиск по названию игры, `?refresh=true` — обновить кэш (сутки) |
 | GET | `/nodes/:nodeId` | Раздел по числовому id: игра, название, ссылка |
 | POST | `/preview` | Предпросмотр без записи: `nodeId`, опц. `variantAttrs`, `titleRules`. Возвращает число предложений и продавцов, доступные фильтры, разбивку на варианты с ценами и признак `needsRules` |
-| POST | `/sync` | Загрузка в базу: `nodeId`, `productName`, опц. `categoryId`, `variantAttrs`, `titleRules`, `withSellers`, `sellerStatus` (`draft`/`pending`/`verified`, по умолчанию `pending`) |
+| POST | `/sync` | Загрузка в базу: `nodeId`, `productName`, опц. `gameName` и `nodeName` (из них создаётся дерево категорий), `categoryId`, `variantAttrs`, `titleRules`, `withSellers`, `sellerStatus` (`draft`/`pending`/`verified`, по умолчанию `pending`) |
 | POST | `/sync-batch` | То же для списка разделов (до 20) |
 | GET/POST | `/sources` | Разделы, сохранённые на регулярную синхронизацию |
 | POST | `/sources/:id/sync` | Обновить раздел сейчас |
