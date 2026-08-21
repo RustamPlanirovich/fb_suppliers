@@ -94,8 +94,13 @@ export class CatalogService {
   // Импорт и парсер приходят с текстовыми названиями — здесь они превращаются в id.
   async resolveVariant({ productName, variantName, categoryId }) {
     const slug = slugify(productName);
-    const product = (await this.#products.findBySlug(slug))
-      ?? (await this.#products.create({ name: productName, slug, categoryId }));
+    let product = await this.#products.findBySlug(slug);
+    if (!product) {
+      product = await this.#products.create({ name: productName, slug, categoryId });
+    } else if (categoryId && !product.category_id) {
+      // Товар мог быть создан до появления дерева категорий — доразмечаем при синхронизации.
+      product = await this.#products.update(product.id, { categoryId });
+    }
     const name = variantName || 'Базовый';
     const variant = (await this.#variants.findByName(product.id, name))
       ?? (await this.#variants.create({ productId: product.id, name }));
